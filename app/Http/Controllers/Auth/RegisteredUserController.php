@@ -40,6 +40,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => \App\Models\Role::where('name', 'Adoptujący')->first()?->id ?? 3,
         ]);
 
         event(new Registered($user));
