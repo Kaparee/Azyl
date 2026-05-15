@@ -2,15 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Animal extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'name', 'breed_id', 'age_months', 'genders', 'height', 'color', 
         'description', 'medical_info', 'adoption_fee', 'status', 
         'qr_token', 'arrival_date', 'click_count'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => \App\Enums\AnimalStatus::class,
+            'arrival_date' => 'datetime',
+        ];
+    }
 
     public function breed()
     {
