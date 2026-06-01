@@ -27,3 +27,14 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Trasy do prostego CRUD-a w panelu admina.
+// Sidebar/nav admina ma być robiony osobno, tutaj są tylko adresy stron.
+Route::middleware(['auth', 'role:Admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('animals', \App\Http\Controllers\Admin\AnimalController::class)->except(['show']);
+        Route::resource('species', \App\Http\Controllers\Admin\SpeciesController::class)->except(['show']);
+        Route::resource('breeds', \App\Http\Controllers\Admin\BreedController::class)->except(['show']);
+    });
