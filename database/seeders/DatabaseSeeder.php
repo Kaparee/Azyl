@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         // Create default roles
         $adminRole = \App\Models\Role::create([
-            'name' => 'Administrator',
+            'name' => 'Admin',
             'description' => 'Pełny dostęp do systemu CMS/ERP.'
         ]);
 
