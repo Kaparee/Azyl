@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-    {{-- Formularz dodawania zwierzęcia. Zdjęcia będą dodawane w następnym punkcie planu. --}}
+    {{-- Formularz dodawania zwierzęcia razem ze zdjęciami do galerii. --}}
     <div class="max-w-4xl mx-auto">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
             <div class="border-b border-slate-200 px-6 py-4 flex justify-between items-center">
@@ -9,7 +9,7 @@
                 <a href="{{ route('admin.animals.index') }}" class="text-slate-400">x</a>
             </div>
 
-            <form method="POST" action="{{ route('admin.animals.store') }}" class="p-6">
+            <form method="POST" action="{{ route('admin.animals.store') }}" class="p-6" enctype="multipart/form-data">
                 @csrf
 
                 @if ($errors->any())
@@ -112,6 +112,19 @@
                     <label class="block text-sm mb-1">Informacje medyczne</label>
                     <textarea name="medical_info" rows="3" class="w-full rounded-xl border-slate-200" placeholder="Zdrowie, leczenie, uwagi...">{{ old('medical_info') }}</textarea>
                     @error('medical_info') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
+
+                <h2 class="font-bold mt-6 mb-4">
+                    <span class="inline-flex w-6 h-6 rounded-full bg-green-500 text-white items-center justify-center text-xs">3</span>
+                    Zdjęcia
+                </h2>
+
+                {{-- Można wybrać kilka plików naraz, a sortowanie będzie według kolejności uploadu. --}}
+                <div class="mb-4">
+                    <label class="block text-sm mb-1">Zdjęcia zwierzęcia</label>
+                    <input type="file" name="images[]" multiple accept="image/*" class="w-full rounded-xl border border-slate-200 p-2">
+                    <p class="text-xs text-slate-500 mt-1">Możesz wybrać kilka zdjęć. Maksymalnie 5 MB na plik.</p>
+                    @error('images.*') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="border-t border-slate-200 pt-4 mt-6 flex justify-end gap-2">

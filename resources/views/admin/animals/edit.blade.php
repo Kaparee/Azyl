@@ -9,7 +9,7 @@
                 <a href="{{ route('admin.animals.index') }}" class="text-slate-400">x</a>
             </div>
 
-            <form method="POST" action="{{ route('admin.animals.update', $animal) }}" class="p-6">
+            <form method="POST" action="{{ route('admin.animals.update', $animal) }}" class="p-6" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -116,6 +116,37 @@
                 </div>
 
                 <p class="text-sm text-slate-500">Token QR: {{ $animal->qr_token }}</p>
+
+                <h2 class="font-bold mt-6 mb-4">
+                    <span class="inline-flex w-6 h-6 rounded-full bg-green-500 text-white items-center justify-center text-xs">3</span>
+                    Zdjęcia
+                </h2>
+
+                {{-- Tu można ustawić kolejność zdjęć, które już są przypisane do zwierzęcia. --}}
+                @if ($animal->animalImages->count())
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        @foreach ($animal->animalImages->sortBy('sort_order') as $animalImage)
+                            <div class="border border-slate-200 rounded-2xl p-3">
+                                @if ($animalImage->image)
+                                    <img src="{{ asset('storage/'.$animalImage->image->file_name) }}" alt="{{ $animalImage->image->original_file_name }}" class="w-full h-32 object-cover rounded-xl mb-2">
+                                @endif
+
+                                <label class="block text-sm mb-1">Kolejność</label>
+                                <input type="number" name="sort_order[{{ $animalImage->id }}]" value="{{ old('sort_order.'.$animalImage->id, $animalImage->sort_order) }}" class="w-full rounded-xl border-slate-200">
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-slate-500 mb-4">To zwierzę nie ma jeszcze zdjęć.</p>
+                @endif
+
+                {{-- Nowe zdjęcia dopiszą się na końcu galerii. --}}
+                <div class="mb-4">
+                    <label class="block text-sm mb-1">Dodaj kolejne zdjęcia</label>
+                    <input type="file" name="images[]" multiple accept="image/*" class="w-full rounded-xl border border-slate-200 p-2">
+                    <p class="text-xs text-slate-500 mt-1">Możesz wybrać kilka zdjęć. Maksymalnie 5 MB na plik.</p>
+                    @error('images.*') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                </div>
 
                 <div class="border-t border-slate-200 pt-4 mt-6 flex justify-end gap-2">
                     <a href="{{ route('admin.animals.index') }}" class="px-4 py-2 rounded-xl bg-slate-100">Anuluj</a>
