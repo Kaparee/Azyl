@@ -21,6 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::post('/animals/{animal}/like', [\App\Http\Controllers\AnimalLikeController::class, 'toggle'])->name('animals.like');
+
     // Adoption Applications
     Route::post('/adoption-applications', [\App\Http\Controllers\AdoptionApplicationController::class, 'store'])->name('adoption-applications.store');
     
