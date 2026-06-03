@@ -7,6 +7,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// katalog zwierząt i wejście przez token QR.
+Route::get('/animals', [\App\Http\Controllers\AnimalCatalogController::class, 'index'])->name('animals.index');
+Route::get('/animals/{animal}', [\App\Http\Controllers\AnimalCatalogController::class, 'show'])->name('animals.show');
+Route::get('/a/{qr_token}', [\App\Http\Controllers\AnimalCatalogController::class, 'qr'])->name('animals.qr');
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -28,8 +33,6 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Trasy do prostego CRUD-a w panelu admina.
-// Sidebar/nav admina ma być robiony osobno, tutaj są tylko adresy stron.
 Route::middleware(['auth', 'role:Admin'])
     ->prefix('admin')
     ->name('admin.')
