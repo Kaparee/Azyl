@@ -2,13 +2,22 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    // Pobieramy zalogowanego uzytkownika razem z jego wnioskami adopcyjnymi
+
+    /** @var \App\Models\User $user */
+    $user = Auth::user();
+    $user->load([
+        'adoptionApplications.animal',
+        'donations.fundraiser'
+    ]);
+    return view('dashboard', compact('user'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
