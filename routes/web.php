@@ -7,14 +7,22 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Medical Records
+    Route::get('/medical-records', [App\Http\Controllers\MedicalRecordController::class, 'index'])->name('medical-records.index');
+    Route::post('/medical-records', [App\Http\Controllers\MedicalRecordController::class, 'store'])->name('medical-records.store');
+    
+    // Volunteer Tasks
+    Route::get('/volunteer-tasks', [App\Http\Controllers\VolunteerTaskController::class, 'index'])->name('volunteer-tasks.index');
+    Route::patch('/volunteer-tasks/{task}', [App\Http\Controllers\VolunteerTaskController::class, 'update'])->name('volunteer-tasks.update');
 
     // Adoption Applications
     Route::post('/adoption-applications', [\App\Http\Controllers\AdoptionApplicationController::class, 'store'])->name('adoption-applications.store');
