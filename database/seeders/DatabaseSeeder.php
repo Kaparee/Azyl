@@ -69,6 +69,9 @@ class DatabaseSeeder extends Seeder
             AnimalSeeder::class,
             MedicalRecordSeeder::class,
             VolunteerTaskSeeder::class,
+            AdoptionApplicationSeeder::class,
+            FundraiserAndDonationSeeder::class,
+            ImageAndLikeSeeder::class,
         ]);
     }
 }

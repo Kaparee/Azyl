@@ -12,64 +12,40 @@ class AnimalSeeder extends Seeder
 {
     public function run(): void
     {
-        $dogSpecies = Species::create(['name' => 'Pies']);
-        $catSpecies = Species::create(['name' => 'Kot']);
-        $rabbitSpecies = Species::create(['name' => 'Królik']);
+        $faker = \Faker\Factory::create('pl_PL');
 
-        $labrador = Breed::create(['species_id' => $dogSpecies->id, 'name' => 'Labrador Retriever']);
-        $borderCollie = Breed::create(['species_id' => $dogSpecies->id, 'name' => 'Border Collie']);
-        $husky = Breed::create(['species_id' => $dogSpecies->id, 'name' => 'Husky Syberyjski']);
-        $golden = Breed::create(['species_id' => $dogSpecies->id, 'name' => 'Golden Retriever']);
-        $euCat = Breed::create(['species_id' => $catSpecies->id, 'name' => 'Europejska']);
-        $euCatMix = Breed::create(['species_id' => $catSpecies->id, 'name' => 'Europejska mieszaniec']);
-        $rabbitMin = Breed::create(['species_id' => $rabbitSpecies->id, 'name' => 'Królik miniaturowy']);
+        $dogSpecies = Species::firstOrCreate(['name' => 'Pies']);
+        $catSpecies = Species::firstOrCreate(['name' => 'Kot']);
+        $rabbitSpecies = Species::firstOrCreate(['name' => 'Królik']);
 
-        Animal::create([
-            'name' => 'Max', 'breed_id' => $labrador->id, 'age_months' => 36, 'genders' => 0,
-            'height' => 50, 'color' => 'Biszkoptowy', 'description' => 'Spokojny labrador',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subMonths(2)
-        ]);
+        $breeds = [
+            Breed::firstOrCreate(['species_id' => $dogSpecies->id, 'name' => 'Labrador Retriever']),
+            Breed::firstOrCreate(['species_id' => $dogSpecies->id, 'name' => 'Border Collie']),
+            Breed::firstOrCreate(['species_id' => $dogSpecies->id, 'name' => 'Husky Syberyjski']),
+            Breed::firstOrCreate(['species_id' => $dogSpecies->id, 'name' => 'Golden Retriever']),
+            Breed::firstOrCreate(['species_id' => $catSpecies->id, 'name' => 'Europejska']),
+            Breed::firstOrCreate(['species_id' => $catSpecies->id, 'name' => 'Europejska mieszaniec']),
+            Breed::firstOrCreate(['species_id' => $rabbitSpecies->id, 'name' => 'Królik miniaturowy']),
+        ];
 
-        Animal::create([
-            'name' => 'Luna', 'breed_id' => $borderCollie->id, 'age_months' => 24, 'genders' => 1,
-            'height' => 45, 'color' => 'Czarno-biały', 'description' => 'Aktywna i wesoła',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subMonths(1)
-        ]);
-
-        Animal::create([
-            'name' => 'Misia', 'breed_id' => $euCatMix->id, 'age_months' => 60, 'genders' => 1,
-            'height' => 25, 'color' => 'Buro-biały', 'description' => 'Puchata kulka',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subMonths(5)
-        ]);
-
-        Animal::create([
-            'name' => 'Rudo', 'breed_id' => $euCat->id, 'age_months' => 12, 'genders' => 0,
-            'height' => 22, 'color' => 'Rudy', 'description' => 'Młody i szalony',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subDays(10)
-        ]);
-
-        Animal::create([
-            'name' => 'Bolt', 'breed_id' => $husky->id, 'age_months' => 48, 'genders' => 0,
-            'height' => 60, 'color' => 'Szaro-biały', 'description' => 'Uwielbia bieganie',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subMonths(3)
-        ]);
-
-        Animal::create([
-            'name' => 'Cleo', 'breed_id' => $euCat->id, 'age_months' => 36, 'genders' => 1,
-            'height' => 24, 'color' => 'Czarny', 'description' => 'Lubi głaskanie',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subDays(15)
-        ]);
-
-        Animal::create([
-            'name' => 'Kruszynka', 'breed_id' => $rabbitMin->id, 'age_months' => 24, 'genders' => 1,
-            'height' => 15, 'color' => 'Biały', 'description' => 'Mała i słodka',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subDays(5)
-        ]);
-
-        Animal::create([
-            'name' => 'Zeus', 'breed_id' => $golden->id, 'age_months' => 84, 'genders' => 0,
-            'height' => 55, 'color' => 'Złoty', 'description' => 'Spokojny senior',
-            'status' => 1, 'qr_token' => Str::random(10), 'arrival_date' => now()->subMonths(6)
-        ]);
+        // Dodaj 150 zwierząt na przestrzeni 12 miesięcy
+        foreach (range(1, 150) as $i) {
+            $randomDate = $faker->dateTimeBetween('-12 months', 'now');
+            
+            Animal::create([
+                'name' => $faker->firstName(),
+                'breed_id' => $breeds[array_rand($breeds)]->id,
+                'age_months' => $faker->numberBetween(1, 120),
+                'genders' => $faker->randomElement([0, 1]),
+                'height' => $faker->numberBetween(20, 80),
+                'color' => $faker->colorName(),
+                'description' => $faker->realText(100),
+                'status' => $faker->randomElement([0, 1, 2, 3]), // np. 0: kwarantanna, 1: do adopcji
+                'qr_token' => Str::random(10),
+                'arrival_date' => $randomDate,
+                'created_at' => $randomDate,
+                'updated_at' => $randomDate,
+            ]);
+        }
     }
 }

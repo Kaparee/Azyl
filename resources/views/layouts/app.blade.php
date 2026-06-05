@@ -25,7 +25,34 @@
                 @include('layouts.topbar')
 
                 <!-- Page Content -->
-                <main class="flex-1 overflow-y-auto p-8">
+                <main class="flex-1 overflow-y-auto p-8 relative">
+                    <!-- Global Toasts -->
+                    @if(session('success') || session('error'))
+                        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)" 
+                             class="absolute top-4 right-8 z-50 transition-all duration-300 transform"
+                             x-transition:enter="ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave="ease-in duration-200"
+                             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                            
+                            @if(session('success'))
+                                <div class="bg-green-50 text-green-800 border border-green-200 rounded-xl p-4 shadow-lg flex items-center gap-3">
+                                    <svg class="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span class="font-medium text-sm">{{ session('success') }}</span>
+                                </div>
+                            @endif
+                            
+                            @if(session('error'))
+                                <div class="bg-red-50 text-red-800 border border-red-200 rounded-xl p-4 shadow-lg flex items-center gap-3">
+                                    <svg class="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span class="font-medium text-sm">{{ session('error') }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     {{ $slot }}
                 </main>
             </div>

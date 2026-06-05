@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function () {
     
     // Volunteer Tasks
     Route::get('/volunteer-tasks', [App\Http\Controllers\VolunteerTaskController::class, 'index'])->name('volunteer-tasks.index');
+    Route::post('/volunteer-tasks', [App\Http\Controllers\VolunteerTaskController::class, 'store'])->name('volunteer-tasks.store');
     Route::patch('/volunteer-tasks/{task}', [App\Http\Controllers\VolunteerTaskController::class, 'update'])->name('volunteer-tasks.update');
 
     // Adoption Applications

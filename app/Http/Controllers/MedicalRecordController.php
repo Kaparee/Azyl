@@ -6,9 +6,19 @@ use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('medical-records.index');
+        $query = \App\Models\Animal::with(['breed', 'medicalRecords' => function($q) {
+            $q->orderByDesc('treatment_date');
+        }]);
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $animals = $query->paginate(15)->appends($request->query());
+
+        return view('medical-records.index', compact('animals'));
     }
 
     public function store(Request $request)

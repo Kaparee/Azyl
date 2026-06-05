@@ -40,12 +40,36 @@ class DashboardController extends Controller
         return $this->userDashboard();
     }
 
+    private function calculatePercentageChange($current, $previous)
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+        return round((($current - $previous) / $previous) * 100);
+    }
+
     private function adminDashboard()
     {
+        $currentMonth = Carbon::now()->month;
+        $previousMonth = Carbon::now()->subMonth()->month;
+
         $animalsCount = Animal::count();
-        $pendingApplicationsCount = AdoptionApplication::where('status', 'pending')->count();
-        $adoptionsThisMonthCount = AdoptionApplication::where('status', 'approved')->whereMonth('updated_at', date('m'))->count();
-        $donationsSum = Donation::whereMonth('created_at', date('m'))->sum('amount');
+        $animalsThisMonth = Animal::whereMonth('created_at', $currentMonth)->count();
+        $animalsLastMonth = Animal::whereMonth('created_at', $previousMonth)->count();
+        $animalsDiff = $this->calculatePercentageChange($animalsThisMonth, $animalsLastMonth);
+
+        $pendingApplicationsCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::PENDING->value)->count();
+        $applicationsThisMonth = AdoptionApplication::whereMonth('created_at', $currentMonth)->count();
+        $applicationsLastMonth = AdoptionApplication::whereMonth('created_at', $previousMonth)->count();
+        $applicationsDiff = $this->calculatePercentageChange($applicationsThisMonth, $applicationsLastMonth);
+
+        $adoptionsThisMonthCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::APPROVED->value)->whereMonth('updated_at', $currentMonth)->count();
+        $adoptionsLastMonthCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::APPROVED->value)->whereMonth('updated_at', $previousMonth)->count();
+        $adoptionsDiff = $this->calculatePercentageChange($adoptionsThisMonthCount, $adoptionsLastMonthCount);
+
+        $donationsSum = Donation::whereMonth('created_at', $currentMonth)->sum('amount');
+        $donationsLastMonthSum = Donation::whereMonth('created_at', $previousMonth)->sum('amount');
+        $donationsDiff = $this->calculatePercentageChange($donationsSum, $donationsLastMonthSum);
         
         // Dane do wykresów (gatunki po powiązanej rasie - dynamicznie wszystkie!)
         $speciesDistribution = \App\Models\Species::withCount(['breeds as animals_count' => function ($query) {
@@ -66,7 +90,7 @@ class DashboardController extends Controller
         })->toArray();
 
         $adoptionsData = AdoptionApplication::selectRaw('YEAR(updated_at) as year, MONTH(updated_at) as month, count(*) as count')
-            ->where('status', 'approved')
+            ->where('status', \App\Enums\AdoptionStatus::APPROVED->value)
             ->where('updated_at', '>=', now()->subMonths(11)->startOfMonth())
             ->groupBy('year', 'month')
             ->get()
@@ -84,6 +108,10 @@ class DashboardController extends Controller
             'pendingApplicationsCount', 
             'adoptionsThisMonthCount', 
             'donationsSum',
+            'animalsDiff',
+            'applicationsDiff',
+            'adoptionsDiff',
+            'donationsDiff',
             'speciesLabels',
             'speciesData',
             'urgentTasks',
@@ -106,7 +134,7 @@ class DashboardController extends Controller
     private function workerDashboard()
     {
         $animalsCount = Animal::count();
-        $pendingApplicationsCount = AdoptionApplication::where('status', 'pending')->count();
+        $pendingApplicationsCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::PENDING->value)->count();
         
         return view('dashboard.worker', compact('animalsCount', 'pendingApplicationsCount'));
     }

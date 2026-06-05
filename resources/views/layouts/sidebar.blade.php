@@ -31,17 +31,13 @@
             </x-sidebar-link>
             @endif
 
-            <x-sidebar-link href="{{ route('dashboard') }}" icon="calendar">
-                Kalendarz spotkań
-            </x-sidebar-link>
+
 
             <x-sidebar-link href="{{ route('volunteer-tasks.index') }}" :active="request()->routeIs('volunteer-tasks.*')" icon="clipboard-list">
                 Plan dnia
             </x-sidebar-link>
 
-            <x-sidebar-link href="#" :active="false" icon="chat-alt-2">
-                Notatki behawioralne
-            </x-sidebar-link>
+
 
             @if($role == 1 || $role == 2)
             <x-sidebar-link href="{{ route('medical-records.index') }}" :active="request()->routeIs('medical-records.*')" icon="stethoscope">

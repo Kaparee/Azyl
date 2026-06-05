@@ -1,21 +1,20 @@
 <x-app-layout>
-    <div class="max-w-5xl mx-auto space-y-6">
+    <div x-data="{ showTaskModal: false }" class="max-w-5xl mx-auto space-y-6 relative">
         <!-- Header -->
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Zadania medyczne</h2>
-            <p class="text-sm text-gray-500">Dzisiaj, {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Zadania wolontariuszy</h2>
+                <p class="text-sm text-gray-500">Dzisiaj, {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
+            </div>
+            @if(in_array(Auth::user()->role_id, [1, 2]))
+            <button @click="showTaskModal = true" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Zleć zadanie
+            </button>
+            @endif
         </div>
 
-        @php
-            $allTasks = App\Models\VolunteerTask::where('assigned_to', Auth::id())->get();
-            $urgentTasks = $allTasks->where('status', 1)->take(2);
-            $completed = $allTasks->where('status', 3)->count();
-            $total = $allTasks->count() > 0 ? $allTasks->count() : 1;
-            
-            // Filtrowanie tylko dla listy
-            $statusFilter = request('status');
-            $tasks = $statusFilter ? $allTasks->where('status', $statusFilter) : $allTasks;
-        @endphp
+
 
         <!-- Pilne Zadania -->
         @if($urgentTasks->count() > 0)
@@ -48,11 +47,11 @@
             
             <div class="grid grid-cols-4 gap-4 text-center">
                 <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                    <div class="text-xl font-bold text-gray-900">{{ $allTasks->where('status', 1)->count() }}</div>
+                    <div class="text-xl font-bold text-gray-900">{{ $statusCounts[1] ?? 0 }}</div>
                     <div class="text-xs text-gray-500 mt-1">Oczekuje</div>
                 </div>
                 <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                    <div class="text-xl font-bold text-blue-600">{{ $allTasks->where('status', 2)->count() }}</div>
+                    <div class="text-xl font-bold text-blue-600">{{ $statusCounts[2] ?? 0 }}</div>
                     <div class="text-xs text-blue-600 mt-1">W trakcie</div>
                 </div>
                 <div class="bg-green-50 rounded-lg p-3 border border-green-100">
@@ -78,7 +77,7 @@
 
         <!-- Tasks List -->
         <div class="space-y-4">
-            @foreach($tasks->sortBy('time') as $task)
+            @forelse($tasks as $task)
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex gap-4 {{ $task->status == 3 ? 'opacity-60' : '' }}">
                 <div class="pt-1 shrink-0">
                     @if($task->status == 3)
@@ -150,7 +149,63 @@
                     @endif
                 </div>
             </div>
-            @endforeach
+            @empty
+            <div class="text-center py-12 bg-white border border-gray-200 rounded-xl shadow-sm">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">Brak przypisanych zadań</h3>
+                <p class="text-sm text-gray-500 mt-1">Dobra robota! Masz czyste konto na ten moment.</p>
+            </div>
+            @endforelse
         </div>
+
+        <div class="mt-4">
+            {{ $tasks->links() }}
+        </div>
+
+        @if(in_array(Auth::user()->role_id, [1, 2]))
+        <!-- Modal: Dodaj Zadanie -->
+        <div x-show="showTaskModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div @click.away="showTaskModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Zleć nowe zadanie</h3>
+                    <button @click="showTaskModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" action="{{ route('volunteer-tasks.store') }}" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tytuł zadania</label>
+                        <input type="text" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm" placeholder="Np. Spacer z Zeusem">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Przypisz wolontariusza</label>
+                        <select name="assigned_to" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                            <option value="">Wybierz...</option>
+                            @foreach($volunteers as $vol)
+                                <option value="{{ $vol->id }}">{{ $vol->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Godzina (Orientacyjna)</label>
+                        <input type="time" name="time" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Szczegóły (Opcjonalnie)</label>
+                        <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm" placeholder="Dodatkowe informacje dla wolontariusza..."></textarea>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="showTaskModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Anuluj</button>
+                        <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">Przydziel zadanie</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
+
     </div>
 </x-app-layout>

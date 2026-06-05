@@ -25,15 +25,10 @@
             <!-- Left Column: Animal List -->
             <div class="flex-1 space-y-4">
                 <!-- Search -->
-                <div class="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center shadow-sm">
+                <form method="GET" action="{{ route('medical-records.index') }}" class="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center shadow-sm">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" placeholder="Szukaj zwierzęcia..." class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-full text-gray-700 placeholder-gray-400">
-                </div>
-
-                <!-- Animal Cards -->
-                @php
-                    $animals = App\Models\Animal::with(['breed', 'medicalRecords'])->get();
-                @endphp
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Szukaj zwierzęcia (wciśnij Enter)..." class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-full text-gray-700 placeholder-gray-400">
+                </form>
 
                 @foreach($animals as $animal)
                 <div x-data="{ expanded: false }" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
@@ -46,7 +41,7 @@
                             <div>
                                 <h3 class="text-lg font-bold text-gray-900">{{ $animal->name }} <span class="text-sm font-normal text-gray-500 ml-2">{{ $animal->breed->name ?? '' }}</span></h3>
                                 <p class="text-xs text-gray-500 mt-0.5">
-                                    {{ floor($animal->age_months/12) }} lat • {{ $animal->genders == 0 ? 'Pies' : 'Kot' }} • {{ $animal->medicalRecords->count() }} wpisów • Ostatnia wizyta: {{ $animal->medicalRecords->sortByDesc('treatment_date')->first()->treatment_date ?? 'Brak' }}
+                                    {{ floor($animal->age_months/12) }} lat • {{ $animal->genders == 0 ? 'Pies' : 'Kot' }} • {{ $animal->medicalRecords->count() }} wpisów • Ostatnia wizyta: {{ $animal->medicalRecords->first()->treatment_date ?? 'Brak' }}
                                 </p>
                             </div>
                         </div>
@@ -62,7 +57,7 @@
                             </button>
                         </div>
                         <div class="space-y-3">
-                            @forelse($animal->medicalRecords->sortByDesc('treatment_date') as $record)
+                            @forelse($animal->medicalRecords as $record)
                             <div class="border border-gray-100 rounded-lg p-4 flex items-start gap-4">
                                 <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center shrink-0">
                                     <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
@@ -90,6 +85,11 @@
                     </div>
                 </div>
                 @endforeach
+
+                <!-- Paginacja -->
+                <div class="mt-4">
+                    {{ $animals->links() }}
+                </div>
             </div>
 
             <!-- Right Column: Sidebar -->
