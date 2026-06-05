@@ -12,7 +12,8 @@ class AnimalCatalogController extends Controller
     // katalog zwierząt z filtrami
     public function index(Request $request)
     {
-        $animals = Animal::with(['breed.species', 'animalImages.image']);
+        $animals = Animal::with(['breed.species', 'animalImages.image'])
+            ->withCount('likedByUsers');
 
         if ($request->q) {
             $animals->where(function ($query) use ($request) {
