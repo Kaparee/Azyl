@@ -18,6 +18,21 @@ class FundraiserAndDonationSeeder extends Seeder
 
         if ($animals->isEmpty()) return;
 
+        $titles = [
+            'Pilna operacja łapy',
+            'Karma weterynaryjna dla kotów',
+            'Nowy wybieg',
+            'Leczenie zębów',
+            'Ratujemy wzrok',
+            'Transport zwierząt z interwencji',
+            'Leki przeciwbólowe',
+            'Budowa nowych bud',
+            'Specjalistyczne badania',
+            'Ratunek po wypadku',
+            'Wsparcie dla kocich maluchów',
+            'Kupno karmy gastro'
+        ];
+
         foreach (range(1, 20) as $i) {
             $goal = $faker->randomFloat(2, 500, 5000);
             $current = $faker->randomFloat(2, 50, $goal);
@@ -25,8 +40,8 @@ class FundraiserAndDonationSeeder extends Seeder
             
             $fundraiser = Fundraiser::create([
                 'animal_id' => $animals->random()->id,
-                'title' => $faker->sentence(4),
-                'description' => $faker->realText(300),
+                'title' => $titles[$i % count($titles)] . ' - cel ' . round($goal) . ' zł',
+                'description' => $faker->paragraph(4),
                 'target_amount' => $goal,
                 'collected_amount' => $current,
                 'qr_token' => \Illuminate\Support\Str::random(10),

@@ -16,27 +16,22 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1 - Administrator
         if ($user->role_id == 1) {
             return $this->adminDashboard();
         }
         
-        // 2 - Weterynarz
         if ($user->role_id == 2) {
             return $this->vetDashboard();
         }
 
-        // 3 - Pracownik
         if ($user->role_id == 3) {
             return $this->workerDashboard();
         }
 
-        // 4 - Wolontariusz
         if ($user->role_id == 4) {
             return $this->volunteerDashboard();
         }
 
-        // 5 - Adoptujący
         return $this->userDashboard();
     }
 
@@ -71,7 +66,6 @@ class DashboardController extends Controller
         $donationsLastMonthSum = Donation::whereMonth('created_at', $previousMonth)->sum('amount');
         $donationsDiff = $this->calculatePercentageChange($donationsSum, $donationsLastMonthSum);
         
-        // Dane do wykresów (gatunki po powiązanej rasie - dynamicznie wszystkie!)
         $speciesDistribution = \App\Models\Species::withCount(['breeds as animals_count' => function ($query) {
             $query->join('animals', 'animals.breed_id', '=', 'breeds.id');
         }])->get();
@@ -122,7 +116,7 @@ class DashboardController extends Controller
 
     private function vetDashboard()
     {
-        $patientsCount = Animal::count(); // lub tylko chore
+        $patientsCount = Animal::count();
         $medicalTasks = VolunteerTask::where('title', 'like', '%Leki%')
                                      ->orWhere('title', 'like', '%Kontrola%')
                                      ->where('status', 1)
