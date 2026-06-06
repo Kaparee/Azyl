@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Rola 1
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Administrator'], [
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin'], [
             'description' => 'Pełny dostęp do systemu CMS/ERP.'
         ]);
 

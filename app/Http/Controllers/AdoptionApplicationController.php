@@ -21,7 +21,7 @@ class AdoptionApplicationController extends Controller
             ->latest()
             ->paginate(15);
 
-        return response()->json($applications);
+        return view('admin.adoptions.index', compact('applications'));
     }
 
     /**
@@ -36,10 +36,7 @@ class AdoptionApplicationController extends Controller
             'message' => $request->message,
         ]);
 
-        return response()->json([
-            'message' => 'Wniosek o adopcję został złożony pomyślnie.',
-            'application' => $application
-        ], 201);
+        return redirect()->back()->with('success', 'Wniosek o adopcję został złożony pomyślnie.');
     }
 
     /**
@@ -48,7 +45,7 @@ class AdoptionApplicationController extends Controller
     public function show(AdoptionApplication $application)
     {
         $application->load(['user', 'animal']);
-        return response()->json($application);
+        return view('admin.adoptions.show', compact('application'));
     }
 
     /**
@@ -63,7 +60,7 @@ class AdoptionApplicationController extends Controller
         $newStatus = AdoptionStatus::from($request->status);
 
         if ($application->status !== AdoptionStatus::PENDING) {
-            return response()->json(['message' => 'Ten wniosek został już przetworzony.'], 422);
+            return redirect()->back()->with('error', 'Ten wniosek został już przetworzony.');
         }
 
         DB::transaction(function () use ($application, $newStatus) {
@@ -81,9 +78,6 @@ class AdoptionApplicationController extends Controller
             }
         });
 
-        return response()->json([
-            'message' => 'Status wniosku został zaktualizowany.',
-            'application' => $application->fresh(['animal'])
-        ]);
+        return redirect()->back()->with('success', 'Status wniosku został zaktualizowany.');
     }
 }
