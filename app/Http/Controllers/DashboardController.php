@@ -144,7 +144,16 @@ class DashboardController extends Controller
 
     private function userDashboard()
     {
-        $applications = AdoptionApplication::where('user_id', Auth::id())->get();
-        return view('dashboard.user', compact('applications'));
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $user->load([
+            'adoptionApplications.animal',
+            'donations.fundraiser'
+        ]);
+        
+        $applications = $user->adoptionApplications;
+        $donations = $user->donations;
+        
+        return view('dashboard.user', compact('user', 'applications', 'donations'));
     }
 }
