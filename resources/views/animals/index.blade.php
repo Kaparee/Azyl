@@ -8,9 +8,6 @@
                 <div class="mt-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
                     <div>
                         <h1 class="text-4xl font-black tracking-tight">Nasze zwierzaki</h1>
-                        <p class="mt-2 max-w-2xl text-slate-600">
-                            Wybierz podopiecznego i sprawdź jego profil, zdjęcia oraz kod QR do szybkiego udostępnienia.
-                        </p>
                     </div>
 
                     <div class="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm ring-1 ring-orange-100">
@@ -167,7 +164,7 @@
                                         </div>
                                     </div>
 
-                                    <a href="{{ route('animals.show', $animal) }}" class="mt-5 block rounded-2xl bg-orange-500 px-4 py-3 text-center text-sm font-bold text-white hover:bg-orange-600">
+                                    <a href="{{ route('animals.qr', $animal->qr_token) }}" class="mt-5 block rounded-2xl bg-orange-500 px-4 py-3 text-center text-sm font-bold text-white hover:bg-orange-600">
                                         Zobacz profil
                                     </a>
                                 </div>

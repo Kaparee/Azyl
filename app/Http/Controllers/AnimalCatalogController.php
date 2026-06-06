@@ -59,10 +59,16 @@ class AnimalCatalogController extends Controller
 
     public function show(Animal $animal)
     {
-        $animal->load(['breed.species', 'animalImages.image']);
+        $animal->load(['breed.species', 'animalImages.image', 'medicalRecords'])
+            ->loadCount('likedByUsers');
+
+        $isLiked = auth()->check()
+            ? auth()->user()->likedAnimals()->where('animals.id', $animal->id)->exists()
+            : false;
 
         return view('animals.show', [
             'animal' => $animal,
+            'isLiked' => $isLiked,
         ]);
     }
 
