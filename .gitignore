@@ -17,3 +17,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Ignorowanie plików deweloperskich (projekty, makiety)
+/Azyl
+/login_foto.png
+/register_foto.png
