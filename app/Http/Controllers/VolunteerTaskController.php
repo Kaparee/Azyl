@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\VolunteerTask;
 
 class VolunteerTaskController extends Controller
 {
     public function index(Request $request)
     {
         $userId = Auth::id();
+        $userRole = Auth::user()->role_id;
         
-        $baseQuery = VolunteerTask::where('assigned_to', $userId);
+        if (in_array($userRole, [1, 2])) {
+            $baseQuery = VolunteerTask::query();
+        } else {
+            $baseQuery = VolunteerTask::where('assigned_to', $userId);
+        }
         
         $completed = (clone $baseQuery)->where('status', 3)->count();
         $total = (clone $baseQuery)->count();
@@ -26,12 +33,14 @@ class VolunteerTaskController extends Controller
         
         $statusCounts = (clone $baseQuery)->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
 
+        $allTasks = (clone $baseQuery)->get();
+
         $volunteers = [];
-        if (in_array(Auth::user()->role_id, [1, 2])) {
+        if (in_array($userRole, [1, 2])) {
             $volunteers = \App\Models\User::where('role_id', 4)->get();
         }
 
-        return view('volunteer-tasks.index', compact('tasks', 'urgentTasks', 'completed', 'total', 'statusCounts', 'volunteers'));
+        return view('volunteer-tasks.index', compact('tasks', 'urgentTasks', 'completed', 'total', 'statusCounts', 'volunteers', 'allTasks'));
     }
 
     public function store(Request $request)
@@ -46,19 +55,35 @@ class VolunteerTaskController extends Controller
         $validated['status'] = 1;
         $validated['date'] = now()->toDateString();
 
-        \App\Models\VolunteerTask::create($validated);
+        VolunteerTask::create($validated);
 
         return back()->with('success', 'Zadanie zostało przypisane wolontariuszowi.');
     }
 
-    public function update(Request $request, \App\Models\VolunteerTask $task)
+    public function update(Request $request, VolunteerTask $task)
     {
-        $validated = $request->validate([
-            'status' => 'required|integer|in:1,2,3',
-        ]);
+        if ($request->has('title')) {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'assigned_to' => 'required|exists:users,id',
+                'time' => 'required',
+                'description' => 'nullable|string',
+                'status' => 'required|integer|in:1,2,3',
+            ]);
+            $task->update($validated);
+            return back()->with('success', 'Zadanie zaktualizowano pomyślnie.');
+        } else {
+            $validated = $request->validate([
+                'status' => 'required|integer|in:1,2,3',
+            ]);
+            $task->update(['status' => $validated['status']]);
+            return back()->with('success', 'Zaktualizowano status zadania.');
+        }
+    }
 
-        $task->update(['status' => $validated['status']]);
-
-        return back()->with('status', 'Zaktualizowano status zadania.');
+    public function destroy(VolunteerTask $task)
+    {
+        $task->delete();
+        return back()->with('success', 'Usunięto zadanie.');
     }
 }

@@ -28,18 +28,26 @@ class AnimalSeeder extends Seeder
             Breed::firstOrCreate(['species_id' => $rabbitSpecies->id, 'name' => 'Królik miniaturowy']),
         ];
 
-        // Dodaj 150 zwierząt na przestrzeni 12 miesięcy
-        foreach (range(1, 150) as $i) {
+        $petNames = [
+            'Burek', 'Reksio', 'Mruczek', 'Puszek', 'Łatek', 'Azor', 'Kropka', 'Pusia', 'Luna', 'Klakier',
+            'Szarik', 'Czaruś', 'Misiek', 'Dżok', 'Maks', 'Kajtek', 'Tośka', 'Bąbel', 'Ruda', 'Zuzia',
+            'Fafik', 'Tofik', 'Fiona', 'Leo', 'Bruno', 'Simba', 'Bella', 'Rocky', 'Borys', 'Koko',
+            'Figo', 'Gacek', 'Drops', 'Nela', 'Sonia', 'Karmel', 'Ciapek', 'Lola', 'Bary', 'Oreo',
+            'Ares', 'Hektor', 'Pimpek', 'Fuks', 'Gryf', 'Tysia', 'Mika', 'Baster', 'Demon', 'Zefir'
+        ];
+
+        // Wygeneruj 50 zwierząt
+        foreach (range(0, 49) as $i) {
             $randomDate = $faker->dateTimeBetween('-12 months', 'now');
             
             Animal::create([
-                'name' => $faker->firstName(),
+                'name' => $petNames[$i],
                 'breed_id' => $breeds[array_rand($breeds)]->id,
                 'age_months' => $faker->numberBetween(1, 120),
                 'genders' => $faker->randomElement([0, 1]),
                 'height' => $faker->numberBetween(20, 80),
                 'color' => $faker->colorName(),
-                'description' => $faker->realText(100),
+                'description' => 'To jest wspaniały zwierzak, który szuka kochającego domu. Bardzo lubi kontakt z człowiekiem, jest ufny i przyjacielsko nastawiony do otoczenia. Czeka na kogoś, kto da mu szansę na nowe, lepsze życie.',
                 'status' => $faker->randomElement([0, 1, 2, 3]), // np. 0: kwarantanna, 1: do adopcji
                 'qr_token' => Str::random(10),
                 'arrival_date' => $randomDate,

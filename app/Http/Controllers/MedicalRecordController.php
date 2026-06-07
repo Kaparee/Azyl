@@ -35,4 +35,36 @@ class MedicalRecordController extends Controller
 
         return back()->with('success', 'Dodano nowy wpis medyczny.');
     }
+
+    public function update(Request $request, \App\Models\MedicalRecord $record)
+    {
+        $validated = $request->validate([
+            'treatment_type' => 'required|string',
+            'description' => 'required|string',
+            'cost' => 'required|numeric',
+            'treatment_date' => 'required|date',
+        ]);
+
+        $record->update($validated);
+
+        return back()->with('success', 'Zaktualizowano wpis medyczny.');
+    }
+
+    public function destroy(\App\Models\MedicalRecord $record)
+    {
+        $record->delete();
+
+        return back()->with('success', 'Usunięto wpis medyczny.');
+    }
+
+    public function exportPdf(\App\Models\Animal $animal)
+    {
+        $animal->load(['breed.species', 'medicalRecords' => function($q) {
+            $q->orderByDesc('treatment_date');
+        }]);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('medical-records.pdf', compact('animal'));
+        
+        return $pdf->download('karta_medyczna_' . $animal->name . '.pdf');
+    }
 }

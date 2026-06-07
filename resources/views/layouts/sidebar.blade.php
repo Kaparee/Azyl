@@ -21,23 +21,27 @@
                 Pulpit główny
             </x-sidebar-link>
 
-            <x-sidebar-link href="{{ route('dashboard') }}" icon="paw">
+            <x-sidebar-link href="#" icon="paw">
                 Zwierzęta
             </x-sidebar-link>
 
-            @if($role == 1 || $role == 2)
-            <x-sidebar-link href="{{ route('dashboard') }}" icon="document">
+            @if($role == 1 || $role == 3)
+            <x-sidebar-link href="{{ route('admin.adoption-applications.index') }}" :active="request()->routeIs('admin.adoption-applications.*')" icon="document">
                 Wnioski adopcyjne
             </x-sidebar-link>
             @endif
 
+            @if($role == 5)
+            <x-sidebar-link href="{{ route('user.adoption-applications.index') }}" :active="request()->routeIs('user.adoption-applications.*')" icon="document-text">
+                Moje wnioski
+            </x-sidebar-link>
+            @endif
 
-
+            @if($role != 5)
             <x-sidebar-link href="{{ route('volunteer-tasks.index') }}" :active="request()->routeIs('volunteer-tasks.*')" icon="clipboard-list">
                 Plan dnia
             </x-sidebar-link>
-
-
+            @endif
 
             @if($role == 1 || $role == 2)
             <x-sidebar-link href="{{ route('medical-records.index') }}" :active="request()->routeIs('medical-records.*')" icon="stethoscope">
@@ -45,22 +49,18 @@
             </x-sidebar-link>
             @endif
 
-            @if($role == 1)
-            <x-sidebar-link href="#" :active="false" icon="currency-dollar">
-                Finanse
+            <x-sidebar-link href="{{ route('fundraisers.index') }}" :active="request()->routeIs('fundraisers.*')" icon="currency-dollar">
+                Finanse / Zbiórki
             </x-sidebar-link>
             
-            <x-sidebar-link href="#" :active="false" icon="users">
+            @if($role == 1)
+            <x-sidebar-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')" icon="users">
                 Użytkownicy
             </x-sidebar-link>
             @endif
 
-            <x-sidebar-link href="#" :active="false" icon="bell">
-                Aktualności / Zbiórki
-            </x-sidebar-link>
-
             <div class="pt-6 mt-6 border-t border-gray-800 space-y-1">
-                <x-sidebar-link href="#" :active="false" icon="external-link">
+                <x-sidebar-link href="{{ url('/') }}" :active="false" icon="external-link">
                     Strona główna
                 </x-sidebar-link>
                 <x-sidebar-link href="{{ route('profile.edit') }}" :active="request()->routeIs('profile.edit')" icon="cog">

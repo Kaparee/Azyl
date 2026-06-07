@@ -33,25 +33,31 @@ class FundraiserAndDonationSeeder extends Seeder
             'Kupno karmy gastro'
         ];
 
-        foreach (range(1, 20) as $i) {
+        $fundraiserAnimals = $animals->random(30); // 30 losowych zwierząt otrzyma zbiórki
+
+        foreach ($fundraiserAnimals as $animal) {
             $goal = $faker->randomFloat(2, 500, 5000);
-            $current = $faker->randomFloat(2, 50, $goal);
+            $status = $faker->randomElement([0, 1]); // 0: w trakcie, 1: zakończona
+            
+            // Jeśli zakończona, kwota musi być osiągnięta lub bliska
+            $current = $status === 1 ? $goal : $faker->randomFloat(2, 50, $goal - 10);
+            
             $randomFundraiserDate = $faker->dateTimeBetween('-12 months', 'now');
             
             $fundraiser = Fundraiser::create([
-                'animal_id' => $animals->random()->id,
-                'title' => $titles[$i % count($titles)] . ' - cel ' . round($goal) . ' zł',
-                'description' => $faker->paragraph(4),
+                'animal_id' => $animal->id,
+                'title' => $faker->randomElement($titles) . ' - ' . $animal->name,
+                'description' => 'To jest zbiórka dedykowana na ratowanie zdrowia i poprawę warunków życia tego wspaniałego zwierzaka. Zebrane środki zostaną w całości przeznaczone na leczenie, rehabilitację oraz zakup niezbędnej, specjalistycznej karmy i leków. Każda, nawet najdrobniejsza wpłata, ogromnie przybliża nas do osiągnięcia celu i sprawia, że szanse na szczęśliwe życie rosną.',
                 'target_amount' => $goal,
                 'collected_amount' => $current,
                 'qr_token' => \Illuminate\Support\Str::random(10),
-                'status' => $faker->numberBetween(0, 1),
-                'end_date' => clone $randomFundraiserDate,
+                'status' => $status,
+                'end_date' => $status === 1 ? clone $randomFundraiserDate : $faker->dateTimeBetween('now', '+3 months'),
                 'created_at' => $randomFundraiserDate,
                 'updated_at' => $randomFundraiserDate,
             ]);
 
-            // Add some donations
+            // Dodaj darowizny, by złożyć kwotę
             $numDonations = $faker->numberBetween(10, 50);
             foreach (range(1, $numDonations) as $j) {
                 $randomDonationDate = $faker->dateTimeBetween($randomFundraiserDate->format('Y-m-d H:i:s'), 'now');

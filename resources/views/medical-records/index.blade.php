@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div x-data="{ showModal: false, selectedAnimalId: null }" class="max-w-7xl mx-auto space-y-6 relative">
+    <div x-data="{ showModal: false, selectedAnimalId: null, showEditModal: false, showDeleteModal: false, selectedRecord: null }" class="max-w-7xl mx-auto space-y-6 relative">
         <!-- Header -->
         <div class="flex justify-between items-center">
             <div>
@@ -51,10 +51,16 @@
                     <div x-show="expanded" style="display: none;" class="mt-6 pt-6 border-t border-gray-100">
                         <div class="flex justify-between items-center mb-4">
                             <h4 class="text-xs font-bold text-gray-500 tracking-wider">HISTORIA MEDYCZNA</h4>
-                            <button @click="showModal = true; selectedAnimalId = {{ $animal->id }}" class="text-xs font-medium bg-orange-100 text-orange-600 px-3 py-1 rounded-full flex items-center gap-1 hover:bg-orange-200">
-                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                Dodaj wpis
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('medical-records.export-pdf', $animal->id) }}" class="text-xs font-medium bg-green-100 text-green-700 px-3 py-1 rounded-full flex items-center gap-1 hover:bg-green-200 transition-colors">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    Pobierz PDF
+                                </a>
+                                <button @click="showModal = true; selectedAnimalId = {{ $animal->id }}" class="text-xs font-medium bg-orange-100 text-orange-600 px-3 py-1 rounded-full flex items-center gap-1 hover:bg-orange-200 transition-colors">
+                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    Dodaj wpis
+                                </button>
+                            </div>
                         </div>
                         <div class="space-y-3">
                             @forelse($animal->medicalRecords as $record)
@@ -74,6 +80,10 @@
                                                 <span>Lek. weterynarii</span>
                                                 <span class="font-medium text-gray-700">{{ $record->cost }} zł</span>
                                             </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button @click="selectedRecord = {{ $record }}; showEditModal = true" class="text-orange-500 hover:text-orange-700 text-xs font-medium">Edytuj</button>
+                                            <button @click="selectedRecord = {{ $record }}; showDeleteModal = true" class="text-red-500 hover:text-red-700 text-xs font-medium">Usuń</button>
                                         </div>
                                     </div>
                                 </div>
@@ -224,5 +234,71 @@
             </div>
         </div>
 
+        <!-- Edit Modal -->
+        <div x-show="showEditModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div @click.away="showEditModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Edytuj wpis medyczny</h3>
+                    <button @click="showEditModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" :action="`/medical-records/${selectedRecord?.id}`" class="space-y-4">
+                    @csrf
+                    @method('PATCH')
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Data wizyty</label>
+                            <input type="date" name="treatment_date" x-model="selectedRecord ? selectedRecord.treatment_date.split(' ')[0] : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Typ leczenia</label>
+                            <select name="treatment_type" x-model="selectedRecord ? selectedRecord.treatment_type : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                                <option value="Szczepienie">Szczepienie</option>
+                                <option value="Zabieg">Zabieg</option>
+                                <option value="Leki">Leki</option>
+                                <option value="Badanie">Badanie</option>
+                                <option value="Odrobaczanie">Odrobaczanie</option>
+                                <option value="Operacja">Operacja</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Opis (szczegóły)</label>
+                        <textarea name="description" rows="3" x-model="selectedRecord ? selectedRecord.description : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Koszt (zł)</label>
+                        <input type="number" step="0.01" name="cost" x-model="selectedRecord ? selectedRecord.cost : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Anuluj</button>
+                        <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">Zapisz zmiany</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Modal -->
+        <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div @click.away="showDeleteModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-red-600">Usuwanie wpisu</h3>
+                    <button @click="showDeleteModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" :action="`/medical-records/${selectedRecord?.id}`" class="space-y-4">
+                    @csrf
+                    @method('DELETE')
+                    <p class="text-sm text-gray-600">Czy na pewno chcesz bezpowrotnie usunąć ten wpis medyczny? Tej operacji nie można cofnąć.</p>
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="showDeleteModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Anuluj</button>
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Usuń wpis</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </x-app-layout>

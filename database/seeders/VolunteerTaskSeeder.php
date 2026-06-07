@@ -10,34 +10,36 @@ class VolunteerTaskSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::where('email', 'admin@azyl.pl')->first();
-        
-        if($admin) {
-            VolunteerTask::create([
-                'title' => 'Leki - Cleo',
-                'description' => 'Amoksycylina 50mg – tabletka w karmie',
-                'date' => '2025-04-24 00:00:00',
-                'time' => '10:00:00',
-                'status' => 3, // Wykonano
-                'assigned_to' => $admin->id
-            ]);
+        $faker = \Faker\Factory::create('pl_PL');
+        $users = User::all();
+
+        $tasksTemplates = [
+            ['title' => 'Wyprowadzenie na spacer', 'desc' => 'Długi spacer z psem, potrzebny wybieg'],
+            ['title' => 'Sprzątanie boksów', 'desc' => 'Konieczne dokładne umycie i dezynfekcja klatek'],
+            ['title' => 'Podanie leków', 'desc' => 'Zgodnie z rozpiską od weterynarza'],
+            ['title' => 'Socjalizacja kotów', 'desc' => 'Czas spędzony w kociarni, zabawa wędką'],
+            ['title' => 'Transport do weta', 'desc' => 'Wizyta kontrolna w klinice'],
+            ['title' => 'Mycie misek', 'desc' => 'Poranne mycie misek po śniadaniu'],
+            ['title' => 'Wyczesywanie', 'desc' => 'Pielęgnacja sierści psów z dłuższą okrywą'],
+            ['title' => 'Odpisywanie na wiadomości', 'desc' => 'Pomoc biurowa, maile od chętnych do adopcji'],
+        ];
+
+        $animals = \App\Models\Animal::all();
+
+        foreach (range(1, 40) as $i) {
+            $template = $faker->randomElement($tasksTemplates);
+            $randomDate = $faker->dateTimeBetween('-2 days', '+7 days')->format('Y-m-d');
+            $randomTime = $faker->dateTimeBetween('10:00:00', '18:00:00')->format('H:i:s');
+            
+            $animalName = $animals->isNotEmpty() ? $animals->random()->name : $faker->firstName();
 
             VolunteerTask::create([
-                'title' => 'Leki - Zeus',
-                'description' => 'Chondroprotex + Omega-3 przy posiłku',
-                'date' => '2025-04-24 00:00:00',
-                'time' => '12:00:00',
-                'status' => 1, // Oczekuje
-                'assigned_to' => $admin->id
-            ]);
-
-            VolunteerTask::create([
-                'title' => 'Kontrola - Cleo',
-                'description' => 'Ocena przebiegu kwarantanny – koniec za 4 dni',
-                'date' => '2025-04-24 00:00:00',
-                'time' => '16:00:00',
-                'status' => 1, // Oczekuje
-                'assigned_to' => $admin->id
+                'title' => $template['title'] . ' - ' . $animalName,
+                'description' => $template['desc'] . '. Bardzo prosimy o rzetelne wykonanie tego zadania i odznaczenie w systemie po ukończeniu.',
+                'date' => $randomDate,
+                'time' => $randomTime,
+                'status' => $faker->randomElement([1, 2, 3]),
+                'assigned_to' => $users->random()->id
             ]);
         }
     }

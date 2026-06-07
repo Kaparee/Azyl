@@ -54,7 +54,7 @@ class AdoptionApplicationController extends Controller
     public function update(Request $request, AdoptionApplication $application)
     {
         $request->validate([
-            'status' => ['required', 'integer', 'in:1,2'], // APPROVED or REJECTED
+            'status' => ['required', 'integer', 'in:1,2'],
         ]);
 
         $newStatus = AdoptionStatus::from($request->status);
@@ -67,10 +67,8 @@ class AdoptionApplicationController extends Controller
             $application->update(['status' => $newStatus]);
 
             if ($newStatus === AdoptionStatus::APPROVED) {
-                // Mark animal as ADOPTED
                 $application->animal->update(['status' => AnimalStatus::ADOPTED]);
 
-                // Optionally: Cancel other pending applications for this animal
                 AdoptionApplication::where('animal_id', $application->animal_id)
                     ->where('id', '!=', $application->id)
                     ->where('status', AdoptionStatus::PENDING)
@@ -79,5 +77,31 @@ class AdoptionApplicationController extends Controller
         });
 
         return redirect()->back()->with('success', 'Status wniosku został zaktualizowany.');
+    }
+
+    /**
+     * Display a listing of applications for the authenticated user.
+     */
+    public function myApplications(Request $request)
+    {
+        $applications = AdoptionApplication::with(['animal'])
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->paginate(15);
+
+        return view('user.adoptions.index', compact('applications'));
+    }
+
+    /**
+     * Display the specified application for the authenticated user.
+     */
+    public function showMyApplication(Request $request, AdoptionApplication $application)
+    {
+        if ($application->user_id !== $request->user()->id) {
+            abort(403, 'Nie masz dostępu do tego wniosku.');
+        }
+
+        $application->load(['animal']);
+        return view('user.adoptions.show', compact('application'));
     }
 }

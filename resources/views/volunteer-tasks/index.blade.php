@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div x-data="{ showTaskModal: false }" class="max-w-5xl mx-auto space-y-6 relative">
+    <div x-data="{ showTaskModal: false, showEditModal: false, showDeleteModal: false, selectedTask: null, viewMode: 'list' }" class="max-w-5xl mx-auto space-y-6 relative">
         <!-- Header -->
         <div class="flex justify-between items-center">
             <div>
@@ -65,18 +65,27 @@
             </div>
         </div>
 
-        <!-- Filters -->
-        <div class="flex items-center gap-2 border-b border-gray-200 pb-4">
-            <a href="?status=" class="{{ request('status') == '' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Wszystkie</a>
-            <a href="?status=1" class="{{ request('status') == '1' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Oczekuje</a>
-            <a href="?status=2" class="{{ request('status') == '2' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">W trakcie</a>
-            <a href="?status=3" class="{{ request('status') == '3' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Wykonano</a>
+        <!-- Filters & View Toggle -->
+        <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+            <div class="flex items-center gap-2">
+                <a href="?status=" class="{{ request('status') == '' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Wszystkie</a>
+                <a href="?status=1" class="{{ request('status') == '1' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Oczekuje</a>
+                <a href="?status=2" class="{{ request('status') == '2' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">W trakcie</a>
+                <a href="?status=3" class="{{ request('status') == '3' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Wykonano</a>
+            </div>
+            <div class="flex bg-gray-100 p-1 rounded-lg">
+                <button @click="viewMode = 'list'" :class="{'bg-white shadow-sm text-gray-900': viewMode === 'list', 'text-gray-500': viewMode !== 'list'}" class="px-3 py-1.5 text-sm font-medium rounded-md transition-all">Lista zadań</button>
+                <button @click="viewMode = 'calendar'; setTimeout(() => window.dispatchEvent(new Event('resize')), 100)" :class="{'bg-white shadow-sm text-gray-900': viewMode === 'calendar', 'text-gray-500': viewMode !== 'calendar'}" class="px-3 py-1.5 text-sm font-medium rounded-md transition-all">Kalendarz</button>
+            </div>
         </div>
         
-        <!-- Type Filters (Usunięto, ponieważ brakuje typów zadań w bazie) -->
+        <!-- Calendar View -->
+        <div x-show="viewMode === 'calendar'" style="display: none;" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-4">
+            <div id="calendar"></div>
+        </div>
 
-        <!-- Tasks List -->
-        <div class="space-y-4">
+        <!-- Tasks List View -->
+        <div x-show="viewMode === 'list'" class="space-y-4">
             @forelse($tasks as $task)
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex gap-4 {{ $task->status == 3 ? 'opacity-60' : '' }}">
                 <div class="pt-1 shrink-0">
@@ -147,6 +156,12 @@
                         </button>
                     </div>
                     @endif
+                    @if(in_array(Auth::user()->role_id, [1, 2]))
+                    <div class="flex items-center gap-2 pt-3 border-t border-gray-100 mt-3">
+                        <button @click="selectedTask = {{ $task }}; showEditModal = true" class="text-orange-500 hover:text-orange-700 text-xs font-medium">Edytuj zadanie</button>
+                        <button @click="selectedTask = {{ $task }}; showDeleteModal = true" class="text-red-500 hover:text-red-700 text-xs font-medium">Usuń zadanie</button>
+                    </div>
+                    @endif
                 </div>
             </div>
             @empty
@@ -160,7 +175,7 @@
             @endforelse
         </div>
 
-        <div class="mt-4">
+        <div class="mt-4" x-show="viewMode === 'list'">
             {{ $tasks->links() }}
         </div>
 
@@ -207,5 +222,129 @@
         </div>
         @endif
 
+        <!-- Edit Modal -->
+        <div x-show="showEditModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div @click.away="showEditModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-900">Edytuj zadanie</h3>
+                    <button @click="showEditModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" :action="`/volunteer-tasks/${selectedTask?.id}`" class="space-y-4">
+                    @csrf
+                    @method('PATCH')
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tytuł zadania</label>
+                        <input type="text" name="title" x-model="selectedTask ? selectedTask.title : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status zadania</label>
+                        <select name="status" x-model="selectedTask ? selectedTask.status : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                            <option value="1">Oczekuje (Pilne)</option>
+                            <option value="2">W trakcie</option>
+                            <option value="3">Zakończone</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Przypisz wolontariusza</label>
+                        <select name="assigned_to" x-model="selectedTask ? selectedTask.assigned_to : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                            <option value="">Wybierz...</option>
+                            @foreach($volunteers as $vol)
+                                <option value="{{ $vol->id }}">{{ $vol->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Godzina (Orientacyjna)</label>
+                        <input type="time" name="time" x-model="selectedTask ? selectedTask.time : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Szczegóły (Opcjonalnie)</label>
+                        <textarea name="description" rows="3" x-model="selectedTask ? selectedTask.description : ''" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"></textarea>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Anuluj</button>
+                        <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600">Zapisz zmiany</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Modal -->
+        <div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div @click.away="showDeleteModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-red-600">Usuwanie zadania</h3>
+                    <button @click="showDeleteModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" :action="`/volunteer-tasks/${selectedTask?.id}`" class="space-y-4">
+                    @csrf
+                    @method('DELETE')
+                    <p class="text-sm text-gray-600">Czy na pewno chcesz bezpowrotnie usunąć to zadanie? Tej operacji nie można cofnąć.</p>
+                    <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="showDeleteModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Anuluj</button>
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700">Usuń zadanie</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var tasks = @json($allTasks);
+            
+            var events = tasks.map(function(task) {
+                var color = '#6b7280'; // Gray (default)
+                if (task.status === 1) color = '#ef4444'; // Red (urgent/waiting)
+                if (task.status === 2) color = '#3b82f6'; // Blue (in progress)
+                if (task.status === 3) color = '#10b981'; // Green (completed)
+                
+                return {
+                    id: task.id,
+                    title: task.title,
+                    start: task.date + 'T' + task.time,
+                    backgroundColor: color,
+                    borderColor: color,
+                    extendedProps: {
+                        description: task.description,
+                        status: task.status
+                    }
+                };
+            });
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                locale: 'pl',
+                events: events,
+                slotMinTime: '06:00:00',
+                slotMaxTime: '22:00:00',
+                allDaySlot: false,
+                height: 600,
+                eventClick: function(info) {
+                    // Could open task details here
+                    alert('Zadanie: ' + info.event.title + '\nOpis: ' + (info.event.extendedProps.description || 'Brak'));
+                }
+            });
+            
+            calendar.render();
+
+            // Resize calendar when tab is shown
+            window.addEventListener('resize', function() {
+                calendar.updateSize();
+            });
+        });
+    </script>
 </x-app-layout>
