@@ -34,13 +34,14 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role_id' => ['required', 'in:2,3'], // Tylko Wolontariusz lub Adoptujący
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => \App\Models\Role::where('name', 'Adoptujący')->first()?->id ?? 3,
+            'role_id' => $request->role_id,
         ]);
 
         event(new Registered($user));

@@ -15,6 +15,24 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(in_array(Auth::user()->role_id, [1]))
+                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            Użytkownicy
+                        </x-nav-link>
+                    @endif
+
+                    @if(in_array(Auth::user()->role_id, [1, 2]))
+                        <x-nav-link :href="route('medical-records.index')" :active="request()->routeIs('medical-records.*')">
+                            Medycyna
+                        </x-nav-link>
+                    @endif
+
+                    @if(in_array(Auth::user()->role_id, [1, 2, 3, 4]))
+                        <x-nav-link :href="route('volunteer-tasks.index')" :active="request()->routeIs('volunteer-tasks.*')">
+                            Zadania
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +88,24 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(in_array(Auth::user()->role_id, [1]))
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                    Użytkownicy
+                </x-responsive-nav-link>
+            @endif
+
+            @if(in_array(Auth::user()->role_id, [1, 2]))
+                <x-responsive-nav-link :href="route('medical-records.index')" :active="request()->routeIs('medical-records.*')">
+                    Medycyna
+                </x-responsive-nav-link>
+            @endif
+
+            @if(in_array(Auth::user()->role_id, [1, 2, 3, 4]))
+                <x-responsive-nav-link :href="route('volunteer-tasks.index')" :active="request()->routeIs('volunteer-tasks.*')">
+                    Zadania
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
