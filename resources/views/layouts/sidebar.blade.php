@@ -14,36 +14,36 @@
 
         <nav class="mt-6 px-4 space-y-1">
             @php
-                $role = Auth::user()->role_id;
+                $role = Auth::user()->role?->name;
             @endphp
 
             <x-sidebar-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" icon="view-grid">
                 Pulpit główny
             </x-sidebar-link>
 
-            <x-sidebar-link href="#" icon="paw">
+            <x-sidebar-link href="{{ route('admin.animals.index') }}" :active="request()->routeIs('admin.animals.*') || request()->routeIs('admin.species.*') || request()->routeIs('admin.breeds.*')" icon="paw">
                 Zwierzęta
             </x-sidebar-link>
 
-            @if($role == 1 || $role == 3)
+            @if(in_array($role, ['Admin', 'Pracownik']))
             <x-sidebar-link href="{{ route('admin.adoption-applications.index') }}" :active="request()->routeIs('admin.adoption-applications.*')" icon="document">
                 Wnioski adopcyjne
             </x-sidebar-link>
             @endif
 
-            @if($role == 5)
+            @if($role == 'Adoptujący')
             <x-sidebar-link href="{{ route('user.adoption-applications.index') }}" :active="request()->routeIs('user.adoption-applications.*')" icon="document-text">
                 Moje wnioski
             </x-sidebar-link>
             @endif
 
-            @if($role != 5)
+            @if($role != 'Adoptujący')
             <x-sidebar-link href="{{ route('volunteer-tasks.index') }}" :active="request()->routeIs('volunteer-tasks.*')" icon="clipboard-list">
                 Plan dnia
             </x-sidebar-link>
             @endif
 
-            @if($role == 1 || $role == 2)
+            @if(in_array($role, ['Admin', 'Weterynarz']))
             <x-sidebar-link href="{{ route('medical-records.index') }}" :active="request()->routeIs('medical-records.*')" icon="stethoscope">
                 Kartoteki medyczne
             </x-sidebar-link>
@@ -53,7 +53,7 @@
                 Finanse / Zbiórki
             </x-sidebar-link>
             
-            @if($role == 1)
+            @if($role == 'Admin')
             <x-sidebar-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')" icon="users">
                 Użytkownicy
             </x-sidebar-link>

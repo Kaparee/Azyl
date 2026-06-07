@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-app-layout>
     {{-- Lista ras. Każda rasa jest pokazana razem ze swoim gatunkiem. --}}
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -58,4 +56,4 @@
             {{ $breeds->links('vendor.pagination.admin') }}
         </div>
     </div>
-@endsection
+</x-app-layout>

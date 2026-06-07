@@ -1,4 +1,6 @@
-@extends('layouts.admin')
+@extends('layouts.public')
+
+@section('title', $animal->name.' - Azyl')
 
 @section('content')
     @php
@@ -24,7 +26,7 @@
         };
     @endphp
 
-    <div class="-m-6 min-h-screen bg-[#fff7f1] px-6 py-8 text-slate-900">
+    <div class="bg-[#fff7f1] px-6 py-8 text-slate-900">
         <div class="mx-auto max-w-7xl">
             <div class="mb-5">
                 <a href="{{ route('animals.index') }}" class="text-sm font-semibold text-slate-500 hover:text-orange-600">← Wróć do katalogu</a>

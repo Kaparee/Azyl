@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-app-layout>
     {{-- Widok listy zwierząt w panelu admina. --}}
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -123,4 +121,4 @@
             {{ $animals->links('vendor.pagination.admin') }}
         </div>
     </div>
-@endsection
+</x-app-layout>

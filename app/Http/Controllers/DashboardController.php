@@ -15,20 +15,21 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $role = $user->role?->name;
 
-        if ($user->role_id == 1) {
+        if ($role === 'Admin') {
             return $this->adminDashboard();
         }
         
-        if ($user->role_id == 2) {
+        if ($role === 'Weterynarz') {
             return $this->vetDashboard();
         }
 
-        if ($user->role_id == 3) {
+        if ($role === 'Pracownik') {
             return $this->workerDashboard();
         }
 
-        if ($user->role_id == 4) {
+        if ($role === 'Wolontariusz') {
             return $this->volunteerDashboard();
         }
 

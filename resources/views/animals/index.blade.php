@@ -1,8 +1,10 @@
-@extends('layouts.admin')
+@extends('layouts.public')
+
+@section('title', 'Zwierzęta - Azyl')
 
 @section('content')
-    <div class="-m-6 min-h-screen bg-[#fff7f1] text-slate-900">
-        <main class="mx-auto max-w-7xl px-6 py-10">
+    <div class="bg-[#fff7f1] py-10 text-slate-900">
+        <div class="mx-auto max-w-7xl px-6">
             <div class="mb-8">
                 <p class="text-sm font-semibold uppercase tracking-wide text-orange-500">Katalog adopcyjny</p>
                 <div class="mt-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -181,7 +183,7 @@
                     </div>
                 </section>
             </div>
-        </main>
+        </div>
 
     </div>
 @endsection

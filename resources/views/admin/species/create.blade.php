@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-app-layout>
     {{-- Mały formularz dodawania nowego gatunku. --}}
     <div class="max-w-xl mx-auto">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -24,4 +22,4 @@
             </form>
         </div>
     </div>
-@endsection
+</x-app-layout>

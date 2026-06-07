@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-app-layout>
     {{-- Lista gatunków, czyli prosty słownik do wyboru przy rasach. --}}
     <div class="flex items-center justify-between mb-6">
         <div>
@@ -56,4 +54,4 @@
             {{ $species->links('vendor.pagination.admin') }}
         </div>
     </div>
-@endsection
+</x-app-layout>

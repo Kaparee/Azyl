@@ -28,7 +28,7 @@
                 </a>
                 <div class="hidden md:flex space-x-8">
                     <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Strona główna</a>
-                    <a href="#" class="text-gray-500 font-medium hover:text-gray-900 transition">Zwierzęta</a>
+                    <a href="{{ route('animals.index') }}" class="{{ request()->routeIs('animals.*') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Zwierzęta</a>
                     <a href="{{ url('/o-nas') }}" class="{{ request()->is('o-nas') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">O nas</a>
                     <a href="#" class="text-gray-500 font-medium hover:text-gray-900 transition">Jak pomóc</a>
                     <a href="#" class="text-gray-500 font-medium hover:text-gray-900 transition">Kontakt</a>
@@ -72,7 +72,7 @@
                     <h3 class="text-white font-bold mb-4 text-base">Szybkie linki</h3>
                     <ul class="space-y-3">
                         <li><a href="{{ url('/o-nas') }}" class="hover:text-white transition">O nas</a></li>
-                        <li><a href="#" class="hover:text-white transition">Zwierzęta</a></li>
+                        <li><a href="{{ route('animals.index') }}" class="hover:text-white transition">Zwierzęta</a></li>
                         <li><a href="#" class="hover:text-white transition">Jak pomóc</a></li>
                         <li><a href="#" class="hover:text-white transition">Regulamin</a></li>
                         <li><a href="#" class="hover:text-white transition">Polityka prywatności</a></li>

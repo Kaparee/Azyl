@@ -1,6 +1,4 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-app-layout>
     {{-- Formularz edycji zwierzęcia. Jest prawie taki sam jak dodawanie, tylko ma stare wartości. --}}
     <div class="max-w-4xl mx-auto">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm">
@@ -155,4 +153,4 @@
             </form>
         </div>
     </div>
-@endsection
+</x-app-layout>
