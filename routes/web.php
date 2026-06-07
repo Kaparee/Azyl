@@ -8,6 +8,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+// katalog zwierząt i wejście przez token QR.
+Route::get('/animals', [\App\Http\Controllers\AnimalCatalogController::class, 'index'])->name('animals.index');
+Route::get('/animals/{animal}', [\App\Http\Controllers\AnimalCatalogController::class, 'show'])->name('animals.show');
+Route::get('/a/{qr_token}', [\App\Http\Controllers\AnimalCatalogController::class, 'qr'])->name('animals.qr');
 Route::get('/o-nas', function () {
     return view('about');
 });
@@ -15,6 +20,7 @@ Route::get('/o-nas', function () {
 Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -46,6 +52,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/volunteer-tasks/{task}', [App\Http\Controllers\VolunteerTaskController::class, 'destroy'])->name('volunteer-tasks.destroy');
     });
 
+    Route::post('/animals/{animal}/like', [\App\Http\Controllers\AnimalLikeController::class, 'toggle'])->name('animals.like');
+
     // Adoption Applications
     Route::post('/adoption-applications', [\App\Http\Controllers\AdoptionApplicationController::class, 'store'])->name('adoption-applications.store');
     
@@ -70,3 +78,12 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::middleware(['auth', 'role:Admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('animals', \App\Http\Controllers\Admin\AnimalController::class)->except(['show']);
+        Route::resource('species', \App\Http\Controllers\Admin\SpeciesController::class)->except(['show']);
+        Route::resource('breeds', \App\Http\Controllers\Admin\BreedController::class)->except(['show']);
+    });
