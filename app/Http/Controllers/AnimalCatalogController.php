@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Animal;
+use App\Models\AnimalClick;
 use App\Models\Breed;
 use App\Models\Species;
 use Illuminate\Http\Request;
@@ -13,7 +14,9 @@ class AnimalCatalogController extends Controller
     public function index(Request $request)
     {
         $animals = Animal::with(['breed.species', 'animalImages.image'])
-            ->withCount('likedByUsers');
+            ->withCount('likedByUsers')
+            ->withCount('recentClicks')
+            ->orderBy('recent_clicks_count', 'desc');
 
         if ($request->q) {
             $animals->where(function ($query) use ($request) {
@@ -77,6 +80,7 @@ class AnimalCatalogController extends Controller
     {
         $animal = Animal::where('qr_token', $qr_token)->firstOrFail();
         $animal->increment('click_count');
+        AnimalClick::create(['animal_id' => $animal->id, 'clicked_at' => now()]);
 
         return redirect()->route('animals.show', $animal);
     }
