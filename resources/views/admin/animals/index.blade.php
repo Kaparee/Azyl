@@ -71,7 +71,7 @@
                             <td class="px-3 py-3">
                                 <div class="flex items-center gap-3">
                                     @if ($firstImage && $firstImage->image)
-                                        <img src="{{ asset('storage/'.$firstImage->image->file_name) }}" alt="{{ $animal->name }}" class="w-10 h-10 rounded-full object-cover">
+                                        <img src="{{ asset('storage/'.$firstImage->image->file_name) }}" alt="{{ $animal->name }}" loading="lazy" decoding="async" width="40" height="40" class="w-10 h-10 rounded-full object-cover">
                                     @else
                                         <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
                                             {{ strtoupper(substr($animal->name, 0, 1)) }}

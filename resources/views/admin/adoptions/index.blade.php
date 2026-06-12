@@ -74,34 +74,39 @@
                                         </td>
 
                                         <td class="px-6 py-4 text-right">
-                                            @if ($app->status->name === 'PENDING')
                                                 <div class="flex items-center justify-end space-x-2">
-                                                    <form
-                                                        action="{{ route('admin.adoption-applications.update', $app) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="hidden" name="status" value="1">
-                                                        <button type="submit"
-                                                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg transition-colors">
-                                                            Akceptuj
-                                                        </button>
-                                                    </form>
+                                                    <a href="{{ route('admin.adoption-applications.show', $app) }}" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium text-xs rounded-lg transition-colors">
+                                                        Szczegóły
+                                                    </a>
 
-                                                    <form
-                                                        action="{{ route('admin.adoption-applications.update', $app) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <input type="hidden" name="status" value="2">
-                                                        <button type="submit"
-                                                            class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-medium text-xs rounded-lg transition-colors">
-                                                            Odrzuć
-                                                        </button>
-                                                    </form>
+                                                    @if ($app->status->name === 'PENDING')
+                                                        <form
+                                                            action="{{ route('admin.adoption-applications.update', $app) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input type="hidden" name="status" value="1">
+                                                            <button type="submit"
+                                                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg transition-colors">
+                                                                Akceptuj
+                                                            </button>
+                                                        </form>
+
+                                                        <form
+                                                            action="{{ route('admin.adoption-applications.update', $app) }}"
+                                                            method="POST">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <input type="hidden" name="status" value="2">
+                                                            <button type="submit"
+                                                                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-medium text-xs rounded-lg transition-colors">
+                                                                Odrzuć
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </div>
-                                            @else
-                                                <span class="text-xs text-gray-400">Brak akcji</span>
+                                            @if ($app->status->name !== 'PENDING')
+                                                <div class="mt-2 text-xs text-gray-400 text-right">Brak akcji do wykonania</div>
                                             @endif
                                         </td>
                                     </tr>

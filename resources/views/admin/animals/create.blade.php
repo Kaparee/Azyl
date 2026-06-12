@@ -30,7 +30,10 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm mb-1">Rasa *</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-sm">Rasa *</label>
+                            <a href="{{ route('admin.breeds.index') }}" target="_blank" class="text-xs text-blue-500 hover:text-blue-700 font-medium">+ dodaj nową rasę</a>
+                        </div>
                         <select name="breed_id" class="w-full rounded-xl border-slate-200" required>
                             <option value="">-- wybierz --</option>
                             @foreach ($breeds as $breed)

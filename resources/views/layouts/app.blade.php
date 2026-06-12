@@ -57,5 +57,23 @@
                 </main>
             </div>
         </div>
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+        <style>
+            .ts-control { border-radius: 0.75rem; border-color: #e2e8f0; padding: 0.5rem 0.75rem; }
+            .ts-dropdown { border-radius: 0.75rem; overflow: hidden; border-color: #e2e8f0; }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                document.querySelectorAll("select").forEach(function(el) {
+                    if (!el.classList.contains("tomselected")) {
+                        new TomSelect(el, {
+                            create: false,
+                            sortField: { field: "text", direction: "asc" }
+                        });
+                    }
+                });
+            });
+        </script>
     </body>
 </html>

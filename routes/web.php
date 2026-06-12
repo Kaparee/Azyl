@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::middleware(['auth', 'role:Admin'])
+Route::middleware(['auth', 'role:Admin,Pracownik'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

@@ -150,10 +150,7 @@
                         </form>
                         @endif
                         
-                        <button class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                            Notatka
-                        </button>
+
                     </div>
                     @endif
                     @if(in_array(Auth::user()->role_id, [1, 2]))
@@ -197,10 +194,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Przypisz wolontariusza</label>
-                        <select name="assigned_to" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        <select name="assigned_to" required class="searchable-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
                             <option value="">Wybierz...</option>
                             @foreach($volunteers as $vol)
-                                <option value="{{ $vol->id }}">{{ $vol->name }}</option>
+                                <option value="{{ $vol->id }}">{{ $vol->name }} ({{ $vol->email }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -248,10 +245,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Przypisz wolontariusza</label>
-                        <select name="assigned_to" x-model="selectedTask ? selectedTask.assigned_to : ''" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
+                        <select name="assigned_to" x-model="selectedTask ? selectedTask.assigned_to : ''" required class="searchable-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
                             <option value="">Wybierz...</option>
                             @foreach($volunteers as $vol)
-                                <option value="{{ $vol->id }}">{{ $vol->name }}</option>
+                                <option value="{{ $vol->id }}">{{ $vol->name }} ({{ $vol->email }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -344,6 +341,15 @@
             // Resize calendar when tab is shown
             window.addEventListener('resize', function() {
                 calendar.updateSize();
+            });
+
+            // Initialize TomSelect for searchable dropdowns
+            document.querySelectorAll('.searchable-select').forEach(function(el) {
+                new TomSelect(el, {
+                    placeholder: 'Wpisz imię, nazwisko lub e-mail...',
+                    allowEmptyOption: true,
+                    maxOptions: 50,
+                });
             });
         });
     </script>

@@ -35,12 +35,12 @@
                         <td class="px-3 py-3 font-semibold">{{ $breed->name }}</td>
                         <td class="px-3 py-3">{{ $breed->species?->name }}</td>
                         <td class="px-3 py-3 text-right">
-                            <a href="{{ route('admin.breeds.edit', $breed) }}" class="text-slate-500 hover:text-blue-600">edytuj</a>
+                            <a href="{{ route('admin.breeds.edit', $breed) }}" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-semibold transition-colors">edytuj</a>
 
                             <form method="POST" action="{{ route('admin.breeds.destroy', $breed) }}" class="inline">
                                 @csrf
                                 @method('DELETE')
-                                <button class="ml-2 text-slate-500 hover:text-red-600" onclick="return confirm('Usunąć rasę?')">usuń</button>
+                                <button class="ml-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors" onclick="return confirm('Usunąć rasę?')">usuń</button>
                             </form>
                         </td>
                     </tr>

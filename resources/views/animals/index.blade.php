@@ -162,7 +162,7 @@
                                         </div>
                                         <div class="rounded-2xl bg-orange-50 px-2 py-3">
                                             <p class="font-bold text-slate-900">{{ $animal->click_count }}</p>
-                                            <p class="text-slate-500">wejścia</p>
+                                            <p class="text-slate-500">wejścia (30 dni)</p>
                                         </div>
                                     </div>
 
