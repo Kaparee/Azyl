@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Enums\AdoptionStatus;
+use App\Models\AdoptionApplication;
 use App\Models\Animal;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AdoptionApplication>
+ * @extends Factory<AdoptionApplication>
  */
 class AdoptionApplicationFactory extends Factory
 {

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Enums\AnimalStatus;
+use App\Models\Animal;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFundraiserRequest extends FormRequest
 {
@@ -19,7 +21,7 @@ class StoreFundraiserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
 
     // Validator taki
@@ -31,9 +33,9 @@ class StoreFundraiserRequest extends FormRequest
                 'exists:animals,id',
 
                 function ($attribute, $value, $fail) {
-                    $animal = \App\Models\Animal::find($value);
+                    $animal = Animal::find($value);
                     if ($animal && $animal->status === AnimalStatus::ADOPTED) {
-                        $fail("Nie można utworzyć zbiórki dla zaadoptowanego zwierzęcia");
+                        $fail('Nie można utworzyć zbiórki dla zaadoptowanego zwierzęcia');
                     }
                 },
             ],
@@ -41,7 +43,7 @@ class StoreFundraiserRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'target_amount' => ['required', 'numeric', 'min:1'],
-            'end_date' => ['nullable', 'date', 'after:today']
+            'end_date' => ['nullable', 'date', 'after:today'],
         ];
     }
 }

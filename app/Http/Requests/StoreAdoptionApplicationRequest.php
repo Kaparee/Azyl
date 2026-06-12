@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Enums\AnimalStatus;
+use App\Models\Animal;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +21,7 @@ class StoreAdoptionApplicationRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -31,7 +33,7 @@ class StoreAdoptionApplicationRequest extends FormRequest
                     return $query->where('user_id', $this->user()->id);
                 }),
                 function ($attribute, $value, $fail) {
-                    $animal = \App\Models\Animal::find($value);
+                    $animal = Animal::find($value);
                     if ($animal && $animal->status !== AnimalStatus::AVAILABLE) {
                         $fail('To zwierzę nie jest obecnie dostępne do adopcji.');
                     }

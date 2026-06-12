@@ -2,13 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AdoptionStatus;
+use App\Enums\AnimalStatus;
 use App\Models\AdoptionApplication;
 use App\Models\Animal;
 use App\Models\User;
-use App\Enums\AdoptionStatus;
-use App\Enums\AnimalStatus;
-use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
 
 class AdoptionApplicationSeeder extends Seeder
 {
@@ -29,12 +29,12 @@ class AdoptionApplicationSeeder extends Seeder
             'Szukamy spokojnego przyjaciela dla naszej starszej babci. Zwierzę będzie mieszkało w domu.',
             'Mam doświadczenie z trudnymi psami. Chętnie podejmę się pracy z behawiorystą jeśli będzie trzeba.',
             'Mieszkam sam w mieszkaniu 50m2. Chciałbym zaadoptować kota. Okna mam zabezpieczone siatką.',
-            'Bardzo prosimy o rozpatrzenie naszego wniosku. Dzieci od dawna marzą o psie, a my jesteśmy gotowi na ten obowiązek.'
+            'Bardzo prosimy o rozpatrzenie naszego wniosku. Dzieci od dawna marzą o psie, a my jesteśmy gotowi na ten obowiązek.',
         ];
 
         foreach ($animals as $animal) {
             $numApplications = $faker->numberBetween(1, 3);
-            
+
             for ($i = 0; $i < $numApplications; $i++) {
                 $status = $faker->randomElement([AdoptionStatus::PENDING, AdoptionStatus::APPROVED, AdoptionStatus::REJECTED]);
                 $randomDate = $faker->dateTimeBetween('-6 months', 'now');

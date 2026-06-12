@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Animal;
+use App\Enums\AdoptionStatus;
 use App\Models\AdoptionApplication;
+use App\Models\Animal;
 use App\Models\Donation;
+use App\Models\Species;
+use App\Models\User;
 use App\Models\VolunteerTask;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -20,7 +22,7 @@ class DashboardController extends Controller
         if ($role === 'Admin') {
             return $this->adminDashboard();
         }
-        
+
         if ($role === 'Weterynarz') {
             return $this->vetDashboard();
         }
@@ -41,6 +43,7 @@ class DashboardController extends Controller
         if ($previous == 0) {
             return $current > 0 ? 100 : 0;
         }
+
         return round((($current - $previous) / $previous) * 100);
     }
 
@@ -54,26 +57,26 @@ class DashboardController extends Controller
         $animalsLastMonth = Animal::whereMonth('created_at', $previousMonth)->count();
         $animalsDiff = $this->calculatePercentageChange($animalsThisMonth, $animalsLastMonth);
 
-        $pendingApplicationsCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::PENDING->value)->count();
+        $pendingApplicationsCount = AdoptionApplication::where('status', AdoptionStatus::PENDING->value)->count();
         $applicationsThisMonth = AdoptionApplication::whereMonth('created_at', $currentMonth)->count();
         $applicationsLastMonth = AdoptionApplication::whereMonth('created_at', $previousMonth)->count();
         $applicationsDiff = $this->calculatePercentageChange($applicationsThisMonth, $applicationsLastMonth);
 
-        $adoptionsThisMonthCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::APPROVED->value)->whereMonth('updated_at', $currentMonth)->count();
-        $adoptionsLastMonthCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::APPROVED->value)->whereMonth('updated_at', $previousMonth)->count();
+        $adoptionsThisMonthCount = AdoptionApplication::where('status', AdoptionStatus::APPROVED->value)->whereMonth('updated_at', $currentMonth)->count();
+        $adoptionsLastMonthCount = AdoptionApplication::where('status', AdoptionStatus::APPROVED->value)->whereMonth('updated_at', $previousMonth)->count();
         $adoptionsDiff = $this->calculatePercentageChange($adoptionsThisMonthCount, $adoptionsLastMonthCount);
 
         $donationsSum = Donation::whereMonth('created_at', $currentMonth)->sum('amount');
         $donationsLastMonthSum = Donation::whereMonth('created_at', $previousMonth)->sum('amount');
         $donationsDiff = $this->calculatePercentageChange($donationsSum, $donationsLastMonthSum);
-        
-        $speciesDistribution = \App\Models\Species::withCount(['breeds as animals_count' => function ($query) {
+
+        $speciesDistribution = Species::withCount(['breeds as animals_count' => function ($query) {
             $query->join('animals', 'animals.breed_id', '=', 'breeds.id');
         }])->get();
-        
+
         $speciesLabels = $speciesDistribution->pluck('name')->toArray();
         $speciesData = $speciesDistribution->pluck('animals_count')->toArray();
-        
+
         $urgentTasks = VolunteerTask::where('status', 1)->orderBy('time')->take(4)->get();
 
         $last12Months = collect(range(11, 0))->map(function ($i) {
@@ -85,23 +88,24 @@ class DashboardController extends Controller
         })->toArray();
 
         $adoptionsData = AdoptionApplication::selectRaw('YEAR(updated_at) as year, MONTH(updated_at) as month, count(*) as count')
-            ->where('status', \App\Enums\AdoptionStatus::APPROVED->value)
+            ->where('status', AdoptionStatus::APPROVED->value)
             ->where('updated_at', '>=', now()->subMonths(11)->startOfMonth())
             ->groupBy('year', 'month')
             ->get()
             ->keyBy(function ($item) {
-                return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+                return $item->year.'-'.str_pad($item->month, 2, '0', STR_PAD_LEFT);
             });
 
         $monthlyAdoptions = $last12Months->map(function ($date) use ($adoptionsData) {
             $key = $date->format('Y-m');
+
             return $adoptionsData->has($key) ? $adoptionsData[$key]->count : 0;
         })->toArray();
 
         return view('dashboard.admin', compact(
-            'animalsCount', 
-            'pendingApplicationsCount', 
-            'adoptionsThisMonthCount', 
+            'animalsCount',
+            'pendingApplicationsCount',
+            'adoptionsThisMonthCount',
             'donationsSum',
             'animalsDiff',
             'applicationsDiff',
@@ -119,9 +123,9 @@ class DashboardController extends Controller
     {
         $patientsCount = Animal::count();
         $medicalTasks = VolunteerTask::where('title', 'like', '%Leki%')
-                                     ->orWhere('title', 'like', '%Kontrola%')
-                                     ->where('status', 1)
-                                     ->get();
+            ->orWhere('title', 'like', '%Kontrola%')
+            ->where('status', 1)
+            ->get();
 
         return view('dashboard.vet', compact('patientsCount', 'medicalTasks'));
     }
@@ -129,8 +133,8 @@ class DashboardController extends Controller
     private function workerDashboard()
     {
         $animalsCount = Animal::count();
-        $pendingApplicationsCount = AdoptionApplication::where('status', \App\Enums\AdoptionStatus::PENDING->value)->count();
-        
+        $pendingApplicationsCount = AdoptionApplication::where('status', AdoptionStatus::PENDING->value)->count();
+
         return view('dashboard.worker', compact('animalsCount', 'pendingApplicationsCount'));
     }
 
@@ -139,22 +143,22 @@ class DashboardController extends Controller
         $tasks = VolunteerTask::where('assigned_to', Auth::id())->get();
         $completedToday = $tasks->where('status', 3)->count();
         $pending = $tasks->where('status', 1)->count();
-        
+
         return view('dashboard.volunteer', compact('tasks', 'completedToday', 'pending'));
     }
 
     private function userDashboard()
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $user->load([
             'adoptionApplications.animal',
-            'donations.fundraiser'
+            'donations.fundraiser',
         ]);
-        
+
         $applications = $user->adoptionApplications;
         $donations = $user->donations;
-        
+
         return view('dashboard.user', compact('user', 'applications', 'donations'));
     }
 }

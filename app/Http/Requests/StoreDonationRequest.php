@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Fundraiser;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 // taka valdidacja
@@ -20,7 +22,7 @@ class StoreDonationRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
 
     // Na jakiej zasadzie to walidujemy?
@@ -33,13 +35,13 @@ class StoreDonationRequest extends FormRequest
 
                 // Customowo sprawdzamy czy poza tym ze istnieje to czy jest aktywna
                 function ($attribute, $value, $fail) {
-                    $fundraiser = \App\Models\Fundraiser::find($value);
+                    $fundraiser = Fundraiser::find($value);
                     if ($fundraiser && $fundraiser->status !== 1) {
                         $fail('Ta zbiórka została już zakończona');
                     }
                 },
             ],
-            'amount' => ['required', 'numeric', 'min:1', 'max:99999']
+            'amount' => ['required', 'numeric', 'min:1', 'max:99999'],
         ];
     }
 }

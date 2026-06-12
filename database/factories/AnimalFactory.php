@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Enums\AnimalStatus;
+use App\Models\Animal;
 use App\Models\Breed;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Animal>
+ * @extends Factory<Animal>
  */
 class AnimalFactory extends Factory
 {

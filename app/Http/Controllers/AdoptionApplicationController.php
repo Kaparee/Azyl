@@ -6,7 +6,6 @@ use App\Enums\AdoptionStatus;
 use App\Enums\AnimalStatus;
 use App\Http\Requests\StoreAdoptionApplicationRequest;
 use App\Models\AdoptionApplication;
-use App\Models\Animal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -45,6 +44,7 @@ class AdoptionApplicationController extends Controller
     public function show(AdoptionApplication $application)
     {
         $application->load(['user', 'animal']);
+
         return view('admin.adoptions.show', compact('application'));
     }
 
@@ -102,6 +102,7 @@ class AdoptionApplicationController extends Controller
         }
 
         $application->load(['animal']);
+
         return view('user.adoptions.show', compact('application'));
     }
 }

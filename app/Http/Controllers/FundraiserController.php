@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFundraiserRequest;
 use App\Models\Fundraiser;
-use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 // Controller, ktory zarzadza wyswietlaniem - w skrocie
@@ -17,9 +15,9 @@ class FundraiserController extends Controller
     {
         // Taki entity framework ale w laravelu
         $fundraisers = Fundraiser::with('animal')
-                            ->where('status',1)
-                            ->latest()
-                            ->paginate(12);
+            ->where('status', 1)
+            ->latest()
+            ->paginate(12);
 
         // Zwrot vidoku blade
         return view('fundraisers.index', compact('fundraisers'));
@@ -29,8 +27,7 @@ class FundraiserController extends Controller
     public function store(StoreFundraiserRequest $request)
     {
         // petla ktora sprawdza czy dany qrkod juz nie jest w bazie, generuje dopoki nie bedzie unikalny, taki o smaczek
-        do
-        {
+        do {
             $qrToken = Str::random(32);
         } while (Fundraiser::where('qr_token', $qrToken)->exists());
 
@@ -43,18 +40,19 @@ class FundraiserController extends Controller
             'collected_amount' => 0.00,
             'qr_token' => $qrToken,
             'status' => 1,
-            'end_date' => $request->end_date
+            'end_date' => $request->end_date,
         ]);
 
         // Tak jak wczesniej papka dla przegladarki z kodem 201
         return response()->json([
-            'message' => "Zbiórka została utworzona pomyślnie",
-            'fundraiser' => $fundraiser
+            'message' => 'Zbiórka została utworzona pomyślnie',
+            'fundraiser' => $fundraiser,
         ], 201);
     }
 
     // Pojedyncz zbiorka w sumie
-    public function show(Fundraiser $fundraiser) {
+    public function show(Fundraiser $fundraiser)
+    {
         // Sciaganie Eager
         $fundraiser->load(['animal', 'donations.user']);
 

@@ -2,15 +2,16 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\MedicalRecord;
 use App\Models\Animal;
+use App\Models\MedicalRecord;
+use Faker\Factory;
+use Illuminate\Database\Seeder;
 
 class MedicalRecordSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = \Faker\Factory::create('pl_PL');
+        $faker = Factory::create('pl_PL');
         $animals = Animal::inRandomOrder()->take(50)->get();
 
         $treatments = [
@@ -19,7 +20,7 @@ class MedicalRecordSeeder extends Seeder
             'Zabieg' => ['Kastracja', 'Czyszczenie zębów', 'Szycie rany'],
             'Leki' => ['Antybiotyk', 'Leki przeciwbólowe', 'Krople do oczu', 'Maść na grzybicę'],
             'Odrobaczanie' => ['Tabletka', 'Krople spot-on'],
-            'Profilaktyka' => ['Zabezpieczenie na kleszcze', 'Obcięcie pazurów']
+            'Profilaktyka' => ['Zabezpieczenie na kleszcze', 'Obcięcie pazurów'],
         ];
 
         foreach ($animals as $animal) {
@@ -32,9 +33,9 @@ class MedicalRecordSeeder extends Seeder
                 MedicalRecord::create([
                     'animal_id' => $animal->id,
                     'treatment_type' => $type,
-                    'description' => $descTemplate . ' (Zabieg przeprowadzony w klinice weterynaryjnej, pacjent zniósł dobrze).',
+                    'description' => $descTemplate.' (Zabieg przeprowadzony w klinice weterynaryjnej, pacjent zniósł dobrze).',
                     'cost' => $faker->randomFloat(2, 20, 500),
-                    'treatment_date' => $faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d H:i:s')
+                    'treatment_date' => $faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d H:i:s'),
                 ]);
             }
         }

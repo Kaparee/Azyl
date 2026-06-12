@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Animal;
-use App\Models\User;
-use App\Models\Image;
 use App\Models\AnimalImage;
 use App\Models\AnimalLike;
-use Illuminate\Database\Seeder;
+use App\Models\Image;
+use App\Models\User;
 use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
 
 class ImageAndLikeSeeder extends Seeder
 {
@@ -28,15 +28,15 @@ class ImageAndLikeSeeder extends Seeder
             for ($i = 1; $i <= $numImages; $i++) {
                 $image = Image::create([
                     'animal_id' => $animal->id,
-                    'file_name' => 'seed_' . $faker->uuid . '.jpg',
-                    'original_file_name' => 'photo_' . $i . '.jpg',
-                    'file_type' => 'image/jpeg'
+                    'file_name' => 'seed_'.$faker->uuid.'.jpg',
+                    'original_file_name' => 'photo_'.$i.'.jpg',
+                    'file_type' => 'image/jpeg',
                 ]);
 
                 AnimalImage::create([
                     'animal_id' => $animal->id,
                     'image_id' => $image->id,
-                    'sort_order' => $i
+                    'sort_order' => $i,
                 ]);
             }
 
@@ -46,7 +46,7 @@ class ImageAndLikeSeeder extends Seeder
             foreach ($randomUsers as $user) {
                 AnimalLike::firstOrCreate([
                     'animal_id' => $animal->id,
-                    'user_id' => $user->id
+                    'user_id' => $user->id,
                 ]);
             }
         }

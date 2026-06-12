@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Animal;
+use App\Models\MedicalRecord;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
 {
     public function index(Request $request)
     {
-        $query = \App\Models\Animal::with(['breed', 'medicalRecords' => function($q) {
+        $query = Animal::with(['breed', 'medicalRecords' => function ($q) {
             $q->orderByDesc('treatment_date');
         }]);
 
         if ($request->has('search') && $request->search != '') {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $animals = $query->paginate(15)->appends($request->query());
@@ -31,12 +34,12 @@ class MedicalRecordController extends Controller
             'treatment_date' => 'required|date',
         ]);
 
-        \App\Models\MedicalRecord::create($validated);
+        MedicalRecord::create($validated);
 
         return back()->with('success', 'Dodano nowy wpis medyczny.');
     }
 
-    public function update(Request $request, \App\Models\MedicalRecord $record)
+    public function update(Request $request, MedicalRecord $record)
     {
         $validated = $request->validate([
             'treatment_type' => 'required|string',
@@ -50,21 +53,21 @@ class MedicalRecordController extends Controller
         return back()->with('success', 'Zaktualizowano wpis medyczny.');
     }
 
-    public function destroy(\App\Models\MedicalRecord $record)
+    public function destroy(MedicalRecord $record)
     {
         $record->delete();
 
         return back()->with('success', 'Usunięto wpis medyczny.');
     }
 
-    public function exportPdf(\App\Models\Animal $animal)
+    public function exportPdf(Animal $animal)
     {
-        $animal->load(['breed.species', 'medicalRecords' => function($q) {
+        $animal->load(['breed.species', 'medicalRecords' => function ($q) {
             $q->orderByDesc('treatment_date');
         }]);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('medical-records.pdf', compact('animal'));
-        
-        return $pdf->download('karta_medyczna_' . $animal->name . '.pdf');
+        $pdf = Pdf::loadView('medical-records.pdf', compact('animal'));
+
+        return $pdf->download('karta_medyczna_'.$animal->name.'.pdf');
     }
 }

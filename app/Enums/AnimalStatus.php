@@ -11,7 +11,7 @@ enum AnimalStatus: int
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::AVAILABLE => 'Available',
             self::PENDING => 'Pending Adoption',
             self::ADOPTED => 'Adopted',

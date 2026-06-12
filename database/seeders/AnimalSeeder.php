@@ -2,17 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Animal;
+use App\Models\Breed;
+use App\Models\Species;
+use Faker\Factory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use App\Models\Species;
-use App\Models\Breed;
-use App\Models\Animal;
 
 class AnimalSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = \Faker\Factory::create('pl_PL');
+        $faker = Factory::create('pl_PL');
 
         $dogSpecies = Species::firstOrCreate(['name' => 'Pies']);
         $catSpecies = Species::firstOrCreate(['name' => 'Kot']);
@@ -33,13 +34,13 @@ class AnimalSeeder extends Seeder
             'Szarik', 'Czaruś', 'Misiek', 'Dżok', 'Maks', 'Kajtek', 'Tośka', 'Bąbel', 'Ruda', 'Zuzia',
             'Fafik', 'Tofik', 'Fiona', 'Leo', 'Bruno', 'Simba', 'Bella', 'Rocky', 'Borys', 'Koko',
             'Figo', 'Gacek', 'Drops', 'Nela', 'Sonia', 'Karmel', 'Ciapek', 'Lola', 'Bary', 'Oreo',
-            'Ares', 'Hektor', 'Pimpek', 'Fuks', 'Gryf', 'Tysia', 'Mika', 'Baster', 'Demon', 'Zefir'
+            'Ares', 'Hektor', 'Pimpek', 'Fuks', 'Gryf', 'Tysia', 'Mika', 'Baster', 'Demon', 'Zefir',
         ];
 
         // Wygeneruj 50 zwierząt
         foreach (range(0, 49) as $i) {
             $randomDate = $faker->dateTimeBetween('-12 months', 'now');
-            
+
             Animal::create([
                 'name' => $petNames[$i],
                 'breed_id' => $breeds[array_rand($breeds)]->id,

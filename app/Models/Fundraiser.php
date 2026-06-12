@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Fundraiser extends Model
 {
     protected $fillable = [
-        'animal_id', 'title', 'description', 'target_amount', 
-        'collected_amount', 'qr_token', 'status', 'end_date'
+        'animal_id', 'title', 'description', 'target_amount',
+        'collected_amount', 'qr_token', 'status', 'end_date',
     ];
 
     public function animal()

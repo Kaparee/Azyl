@@ -2,15 +2,17 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\VolunteerTask;
+use App\Models\Animal;
 use App\Models\User;
+use App\Models\VolunteerTask;
+use Faker\Factory;
+use Illuminate\Database\Seeder;
 
 class VolunteerTaskSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = \Faker\Factory::create('pl_PL');
+        $faker = Factory::create('pl_PL');
         $users = User::all();
 
         $tasksTemplates = [
@@ -24,22 +26,22 @@ class VolunteerTaskSeeder extends Seeder
             ['title' => 'Odpisywanie na wiadomości', 'desc' => 'Pomoc biurowa, maile od chętnych do adopcji'],
         ];
 
-        $animals = \App\Models\Animal::all();
+        $animals = Animal::all();
 
         foreach (range(1, 40) as $i) {
             $template = $faker->randomElement($tasksTemplates);
             $randomDate = $faker->dateTimeBetween('-2 days', '+7 days')->format('Y-m-d');
             $randomTime = $faker->dateTimeBetween('10:00:00', '18:00:00')->format('H:i:s');
-            
+
             $animalName = $animals->isNotEmpty() ? $animals->random()->name : $faker->firstName();
 
             VolunteerTask::create([
-                'title' => $template['title'] . ' - ' . $animalName,
-                'description' => $template['desc'] . '. Bardzo prosimy o rzetelne wykonanie tego zadania i odznaczenie w systemie po ukończeniu.',
+                'title' => $template['title'].' - '.$animalName,
+                'description' => $template['desc'].'. Bardzo prosimy o rzetelne wykonanie tego zadania i odznaczenie w systemie po ukończeniu.',
                 'date' => $randomDate,
                 'time' => $randomTime,
                 'status' => $faker->randomElement([1, 2, 3]),
-                'assigned_to' => $users->random()->id
+                'assigned_to' => $users->random()->id,
             ]);
         }
     }
