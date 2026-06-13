@@ -105,9 +105,23 @@
                                     {{ $isLiked ? 'Usuń polubienie' : 'Polub zwierzę' }}
                                 </button>
                             </form>
+
+                            {{-- Przycisk do zbiórki pokazuje się tylko jeśli jest aktywna zbiórka dla zwierzęcia. --}}
+                            @if ($activeFundraiser)
+                                <a href="{{ route('fundraisers.show', $activeFundraiser) }}" class="mt-3 block rounded-2xl bg-green-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-green-600">
+                                    Wesprzyj zbiórkę
+                                </a>
+                            @else
+                                <button disabled class="mt-3 w-full rounded-2xl bg-slate-200 px-5 py-3 text-sm font-bold text-slate-500">
+                                    Brak aktywnej zbiórki
+                                </button>
+                            @endif
                         @else
                             <a href="{{ route('login') }}" class="mt-5 block rounded-2xl bg-orange-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-orange-600">
                                 Zaloguj się, aby polubić
+                            </a>
+                            <a href="{{ route('login') }}" class="mt-3 block rounded-2xl bg-green-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-green-600">
+                                Zaloguj się, aby wesprzeć zbiórkę
                             </a>
                         @endauth
                     </div>

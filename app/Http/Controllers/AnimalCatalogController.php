@@ -69,9 +69,13 @@ class AnimalCatalogController extends Controller
             ? auth()->user()->likedAnimals()->where('animals.id', $animal->id)->exists()
             : false;
 
+        // aktywna zbiórka, jeśli zwierzę ma jakąś uruchomioną
+        $activeFundraiser = $animal->fundraisers()->where('status', 1)->first();
+
         return view('animals.show', [
             'animal' => $animal,
             'isLiked' => $isLiked,
+            'activeFundraiser' => $activeFundraiser,
         ]);
     }
 
