@@ -67,6 +67,7 @@ class DatabaseSeeder extends Seeder
             AdoptionApplicationSeeder::class,
             FundraiserAndDonationSeeder::class,
             ImageAndLikeSeeder::class,
+            NewsSeeder::class,
         ]);
     }
 }
