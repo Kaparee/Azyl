@@ -151,14 +151,56 @@ class DashboardController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        $user->load([
-            'adoptionApplications.animal',
-            'donations.fundraiser',
-        ]);
+        
+        // Contextual Search query from request
+        $query = request('q');
 
-        $applications = $user->adoptionApplications;
-        $donations = $user->donations;
+        // 1. Applications (filtered if searching on dashboard or my applications)
+        $applicationsQuery = $user->adoptionApplications()->with(['animal.images', 'animal.breed.species']);
+        if ($query && request('tab') === 'applications') {
+            $applicationsQuery->whereHas('animal', function($q) use ($query) {
+                $q->where('name', 'like', '%'.$query.'%')
+                  ->orWhere('description', 'like', '%'.$query.'%');
+            });
+        }
+        $applications = $applicationsQuery->latest()->get();
 
-        return view('dashboard.user', compact('user', 'applications', 'donations'));
+        // 2. Donations
+        $donationsQuery = $user->donations()->with('fundraiser.animal');
+        if ($query && request('tab') === 'donations') {
+            $donationsQuery->whereHas('fundraiser', function($q) use ($query) {
+                $q->where('title', 'like', '%'.$query.'%')
+                  ->orWhere('description', 'like', '%'.$query.'%');
+            });
+        }
+        $donations = $donationsQuery->latest()->get();
+
+        // 3. Liked Animals
+        $likedAnimalsQuery = $user->likedAnimals()->with(['breed.species', 'images']);
+        if ($query && request('tab') === 'likes') {
+            $likedAnimalsQuery->where(function($q) use ($query) {
+                $q->where('name', 'like', '%'.$query.'%')
+                  ->orWhere('description', 'like', '%'.$query.'%');
+            });
+        }
+        $likedAnimals = $likedAnimalsQuery->latest()->get();
+
+        // 4. Animal Suggestions (proponowane zwierzaki o statusie AVAILABLE = 0, z wykluczeniem już polubionych)
+        $likedAnimalIds = $likedAnimals->pluck('id')->toArray();
+        
+        // Bazujemy na preferowanym gatunku z polubionych zwierzaków
+        $preferredBreedIds = $likedAnimals->pluck('breed_id')->unique()->toArray();
+        
+        $suggestionsQuery = Animal::with(['breed.species', 'images'])
+            ->where('status', 0) // AVAILABLE
+            ->whereNotIn('id', $likedAnimalIds);
+
+        if (!empty($preferredBreedIds)) {
+            $suggestionsQuery->orderByRaw('CASE WHEN breed_id IN (' . implode(',', $preferredBreedIds) . ') THEN 0 ELSE 1 END');
+        }
+
+        $suggestions = $suggestionsQuery->inRandomOrder()->take(3)->get();
+
+        return view('dashboard.user', compact('user', 'applications', 'donations', 'likedAnimals', 'suggestions'));
     }
 }
