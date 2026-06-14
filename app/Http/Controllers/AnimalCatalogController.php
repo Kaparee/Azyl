@@ -83,7 +83,6 @@ class AnimalCatalogController extends Controller
     public function qr($qr_token)
     {
         $animal = Animal::where('qr_token', $qr_token)->firstOrFail();
-        $animal->increment('click_count');
         AnimalClick::create(['animal_id' => $animal->id, 'clicked_at' => now()]);
 
         return redirect()->route('animals.show', $animal);

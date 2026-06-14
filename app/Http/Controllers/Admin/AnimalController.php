@@ -61,7 +61,6 @@ class AnimalController extends Controller
         } while (Animal::where('qr_token', $token)->exists());
 
         $data['qr_token'] = $token;
-        $data['click_count'] = 0;
 
         $animal = Animal::create($data);
 

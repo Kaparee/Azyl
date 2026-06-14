@@ -26,6 +26,12 @@ Route::get('/a/{qr_token}', [AnimalCatalogController::class, 'qr'])->name('anima
 Route::get('/o-nas', function () {
     return view('about');
 });
+Route::get('/jak-pomoc', function () {
+    return view('jak-pomoc');
+});
+Route::get('/kontakt', function () {
+    return view('kontakt');
+});
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
