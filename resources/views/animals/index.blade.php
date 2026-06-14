@@ -21,7 +21,7 @@
             <div class="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
                 <aside>
                     <form method="GET" action="{{ route('animals.index') }}" class="sticky top-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-orange-100">
-                        {{-- Filtry są zwykłymi parametrami GET, żeby działały razem z paginacją. --}}
+                        <!-- Filtry są zwykłymi parametrami GET, żeby działały razem z paginacją. -->
                         <div class="mb-5 flex items-center justify-between">
                             <h2 class="text-lg font-bold">Filtry</h2>
                             <a href="{{ route('animals.index') }}" class="text-xs font-semibold text-orange-500 hover:text-orange-600">Wyczyść</a>
@@ -161,8 +161,8 @@
                                             <p class="text-slate-500">płeć</p>
                                         </div>
                                         <div class="rounded-2xl bg-orange-50 px-2 py-3">
-                                            <p class="font-bold text-slate-900">{{ $animal->click_count }}</p>
-                                            <p class="text-slate-500">wejścia (30 dni)</p>
+                                            <p class="font-bold text-slate-900">{{ $animal->recent_clicks_count ?? 0 }}</p>
+                                            <p class="text-slate-500">wejścia</p>
                                         </div>
                                     </div>
 

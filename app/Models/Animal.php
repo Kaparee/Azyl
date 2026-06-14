@@ -13,7 +13,7 @@ class Animal extends Model
     protected $fillable = [
         'name', 'breed_id', 'age_months', 'genders', 'height', 'color',
         'description', 'medical_info', 'adoption_fee', 'status',
-        'qr_token', 'arrival_date', 'click_count',
+        'qr_token', 'arrival_date',
     ];
 
     protected function casts(): array

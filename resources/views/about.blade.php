@@ -24,11 +24,11 @@
             </p>
             
             <div class="mt-10 flex flex-col sm:flex-row gap-4">
-                <a href="#" class="bg-azyl-orange text-white px-8 py-3.5 rounded-full font-semibold hover-bg-azyl-orange transition flex items-center justify-center gap-2 shadow-lg">
+                <a href="{{ route('animals.index') }}" class="bg-azyl-orange text-white px-8 py-3.5 rounded-full font-semibold hover-bg-azyl-orange transition flex items-center justify-center gap-2 shadow-lg">
                     Poznaj nasze zwierzęta
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </a>
-                <a href="#" class="bg-transparent text-white border border-white/40 px-8 py-3.5 rounded-full font-semibold hover:bg-white/10 transition flex items-center justify-center">
+                <a href="{{ url('/jak-pomoc') }}" class="bg-transparent text-white border border-white/40 px-8 py-3.5 rounded-full font-semibold hover:bg-white/10 transition flex items-center justify-center">
                     Jak możesz pomóc
                 </a>
             </div>
@@ -265,10 +265,10 @@
                 Adoptuj, wolontariatem lub darowizną – każda forma wsparcia zmienia czyjeś życie.
             </p>
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="{{ url('/') }}" class="bg-white text-azyl-orange px-8 py-3.5 rounded-full font-bold shadow-md hover:bg-gray-50 transition">
+                <a href="{{ route('animals.index') }}" class="bg-white text-azyl-orange px-8 py-3.5 rounded-full font-bold shadow-md hover:bg-gray-50 transition">
                     Znajdź zwierzę
                 </a>
-                <a href="#" class="bg-transparent text-white border border-white/50 px-8 py-3.5 rounded-full font-bold hover:bg-white/10 transition">
+                <a href="{{ url('/jak-pomoc') }}" class="bg-transparent text-white border border-white/50 px-8 py-3.5 rounded-full font-bold hover:bg-white/10 transition">
                     Jak pomóc?
                 </a>
             </div>

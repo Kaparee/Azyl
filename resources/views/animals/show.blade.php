@@ -89,7 +89,7 @@
                             </div>
                             <div class="rounded-2xl bg-orange-50 px-4 py-4">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Wejścia</p>
-                                <p class="mt-1 font-black">{{ $animal->click_count }}</p>
+                                <p class="mt-1 font-black">{{ $animal->recent_clicks_count ?? $animal->recentClicks()->count() }}</p>
                             </div>
                         </div>
 
@@ -117,10 +117,10 @@
                                 </button>
                             @endif
                         @else
-                            <a href="{{ route('login') }}" class="mt-5 block rounded-2xl bg-orange-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-orange-600">
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="mt-5 block rounded-2xl bg-orange-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-orange-600">
                                 Zaloguj się, aby polubić
                             </a>
-                            <a href="{{ route('login') }}" class="mt-3 block rounded-2xl bg-green-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-green-600">
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="mt-3 block rounded-2xl bg-green-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-green-600">
                                 Zaloguj się, aby wesprzeć zbiórkę
                             </a>
                         @endauth

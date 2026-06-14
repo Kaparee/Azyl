@@ -33,7 +33,6 @@ class AnimalFactory extends Factory
             'status' => AnimalStatus::AVAILABLE,
             'qr_token' => Str::random(10),
             'arrival_date' => now(),
-            'click_count' => 0,
         ];
     }
 }

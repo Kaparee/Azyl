@@ -30,8 +30,8 @@
                     <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Strona główna</a>
                     <a href="{{ route('animals.index') }}" class="{{ request()->routeIs('animals.*') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Zwierzęta</a>
                     <a href="{{ url('/o-nas') }}" class="{{ request()->is('o-nas') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">O nas</a>
-                    <a href="#" class="text-gray-500 font-medium hover:text-gray-900 transition">Jak pomóc</a>
-                    <a href="#" class="text-gray-500 font-medium hover:text-gray-900 transition">Kontakt</a>
+                    <a href="{{ url('/jak-pomoc') }}" class="{{ request()->is('jak-pomoc') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Jak pomóc</a>
+                    <a href="{{ url('/kontakt') }}" class="{{ request()->is('kontakt') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Kontakt</a>
                 </div>
                 <div class="flex items-center gap-4">
                     @if (Route::has('login'))
@@ -63,9 +63,9 @@
                         Schronisko „Azyl” od 20 lat daje drugie życie zwierzętom potrzebującym domu, miłości i opieki.
                     </p>
                     <div class="flex space-x-4">
-                        <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 cursor-pointer transition text-white">f</div>
-                        <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 cursor-pointer transition text-white">ig</div>
-                        <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 cursor-pointer transition text-white">yt</div>
+                        <a href="https://facebook.com" target="_blank" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition text-white font-bold">f</a>
+                        <a href="https://instagram.com" target="_blank" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition text-white font-bold">ig</a>
+                        <a href="https://youtube.com" target="_blank" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition text-white font-bold">yt</a>
                     </div>
                 </div>
                 <div>
@@ -73,9 +73,9 @@
                     <ul class="space-y-3">
                         <li><a href="{{ url('/o-nas') }}" class="hover:text-white transition">O nas</a></li>
                         <li><a href="{{ route('animals.index') }}" class="hover:text-white transition">Zwierzęta</a></li>
-                        <li><a href="#" class="hover:text-white transition">Jak pomóc</a></li>
-                        <li><a href="#" class="hover:text-white transition">Regulamin</a></li>
-                        <li><a href="#" class="hover:text-white transition">Polityka prywatności</a></li>
+                        <li><a href="{{ url('/jak-pomoc') }}" class="hover:text-white transition">Jak pomóc</a></li>
+                        <li><a href="{{ url('/regulamin') }}" class="hover:text-white transition">Regulamin</a></li>
+                        <li><a href="{{ url('/polityka-prywatnosci') }}" class="hover:text-white transition">Polityka prywatności</a></li>
                     </ul>
                 </div>
                 <div>
@@ -102,7 +102,7 @@
                 <div>
                     <h3 class="text-white font-bold mb-4 text-base">Wesprzyj nas</h3>
                     <p class="mb-4">Każda złotówka trafia bezpośrednio do zwierząt potrzebujących pomocy.</p>
-                    <a href="#" class="bg-azyl-orange text-white px-6 py-2.5 rounded-lg font-medium hover-bg-azyl-orange transition inline-block mb-4 shadow-sm">Adoptuj wirtualnie</a>
+                    <a href="{{ route('fundraisers.index') }}" class="bg-azyl-orange text-white px-6 py-2.5 rounded-lg font-medium hover-bg-azyl-orange transition inline-block mb-4 shadow-sm">Adoptuj wirtualnie</a>
                     <p class="text-xs text-gray-500">
                         Nr konta: 12 1234 5678 9012 3456 7890 1234<br/>
                         Tytułem: „Darowizna dla Azylu”
