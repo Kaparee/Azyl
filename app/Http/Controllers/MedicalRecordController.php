@@ -11,13 +11,25 @@ class MedicalRecordController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Animal::with(['breed', 'medicalRecords' => function ($q) {
-            $q->orderByDesc('treatment_date');
-        }]);
+        $treatmentType = $request->input('treatment_type');
+        $query = Animal::query();
 
         if ($request->has('search') && $request->search != '') {
             $query->where('name', 'like', '%'.$request->search.'%');
         }
+
+        if ($treatmentType) {
+            $query->whereHas('medicalRecords', function ($q) use ($treatmentType) {
+                $q->where('treatment_type', $treatmentType);
+            });
+        }
+
+        $query->with(['breed', 'medicalRecords' => function ($q) use ($treatmentType) {
+            if ($treatmentType) {
+                $q->where('treatment_type', $treatmentType);
+            }
+            $q->orderByDesc('treatment_date');
+        }]);
 
         $animals = $query->paginate(15)->appends($request->query());
 

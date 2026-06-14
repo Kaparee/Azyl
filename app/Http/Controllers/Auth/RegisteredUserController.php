@@ -34,7 +34,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s\-]+$/u'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', 'string', 'min:8', 'max:20', Rules\Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
-            'role_id' => ['required', 'in:2,3'], // Tylko Wolontariusz lub Adoptujący
+            'role_id' => ['required', 'in:4,5'],
         ]);
 
         $user = User::create([

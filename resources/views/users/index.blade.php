@@ -23,20 +23,14 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
-                    <div class="flex justify-between items-center mb-6">
-                        <form method="GET" action="{{ route('users.index') }}" class="flex gap-2 w-1/3">
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Szukaj po nazwie lub emailu..." class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
-                            <button type="submit" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm font-medium">Szukaj</button>
-                        </form>
-                        <div class="flex gap-2">
-                            <button type="button" @click="showCreateModal = true" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 text-sm font-medium">
-                                Dodaj użytkownika
-                            </button>
-                            <a href="{{ route('users.export-csv') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-                                Eksportuj CSV
-                            </a>
-                        </div>
+                    <div class="flex justify-end items-center mb-6 gap-2">
+                        <button type="button" @click="showCreateModal = true" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 text-sm font-medium">
+                            Dodaj użytkownika
+                        </button>
+                        <a href="{{ route('users.export-csv') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                            Eksportuj CSV
+                        </a>
                     </div>
 
                     <div class="overflow-x-auto">

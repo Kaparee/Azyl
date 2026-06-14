@@ -20,17 +20,29 @@ class VolunteerTaskController extends Controller
             $baseQuery = VolunteerTask::where('assigned_to', $userId);
         }
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $baseQuery->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            });
+        }
+
         $completed = (clone $baseQuery)->where('status', 3)->count();
         $total = (clone $baseQuery)->count();
         $total = $total > 0 ? $total : 1;
 
-        $urgentTasks = (clone $baseQuery)->where('status', 1)->orderBy('time')->take(2)->get();
+        $urgentTasks = (clone $baseQuery)->where('is_urgent', true)->where('status', '!=', 3)->orderBy('time')->take(2)->get();
 
         $tasksQuery = clone $baseQuery;
-        if ($request->has('status') && $request->status !== null) {
+        if ($request->has('status') && $request->status !== null && $request->status !== '') {
             $tasksQuery->where('status', $request->status);
         }
-        $tasks = $tasksQuery->orderBy('time')->paginate(10);
+        $tasks = $tasksQuery->with('assignedUser')
+            ->orderByDesc('is_urgent')
+            ->orderBy('status', 'asc')
+            ->orderBy('time', 'asc')
+            ->get();
 
         $statusCounts = (clone $baseQuery)->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
 
@@ -51,10 +63,12 @@ class VolunteerTaskController extends Controller
             'assigned_to' => 'required|exists:users,id',
             'time' => 'required',
             'description' => 'nullable|string',
+            'is_urgent' => 'sometimes|boolean',
         ]);
 
         $validated['status'] = 1;
         $validated['date'] = now()->toDateString();
+        $validated['is_urgent'] = $request->boolean('is_urgent');
 
         VolunteerTask::create($validated);
 
@@ -70,18 +84,21 @@ class VolunteerTaskController extends Controller
                 'time' => 'required',
                 'description' => 'nullable|string',
                 'status' => 'required|integer|in:1,2,3',
+                'is_urgent' => 'sometimes|boolean',
             ]);
+
+            $validated['is_urgent'] = $request->boolean('is_urgent');
             $task->update($validated);
 
             return back()->with('success', 'Zadanie zaktualizowano pomyślnie.');
-        } else {
-            $validated = $request->validate([
-                'status' => 'required|integer|in:1,2,3',
-            ]);
-            $task->update(['status' => $validated['status']]);
-
-            return back()->with('success', 'Zaktualizowano status zadania.');
         }
+
+        $validated = $request->validate([
+            'status' => 'required|integer|in:1,2,3',
+        ]);
+        $task->update(['status' => $validated['status']]);
+
+        return back()->with('success', 'Zaktualizowano status zadania.');
     }
 
     public function destroy(VolunteerTask $task)

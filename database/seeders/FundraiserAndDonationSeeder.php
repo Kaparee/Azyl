@@ -37,21 +37,45 @@ class FundraiserAndDonationSeeder extends Seeder
             'Kupno karmy gastro',
         ];
 
-        $fundraiserAnimals = $animals->random(30); // 30 losowych zwierząt otrzyma zbiórki
+        $descriptionIntros = [
+            'Zebrane środki pozwolą nam zapewnić %s natychmiastową opiekę weterynaryjną.',
+            'Ta zbiórka jest kluczowa dla %s — każda wpłata realnie zmienia jego codzienność.',
+            'Dzięki Waszemu wsparciu %s szybciej wróci do formy i będzie gotowy na adopcję.',
+            'Pilnie zbieramy fundusze, aby %s mógł przejść niezbędne leczenie bez opóźnień.',
+            'Wspólnie możemy zapewnić %s komfort, bezpieczeństwo i profesjonalną opiekę.',
+        ];
+
+        $descriptionDetails = [
+            'Plan obejmuje konsultację specjalisty, zakup leków oraz materiałów opatrunkowych.',
+            'Część środków przeznaczymy na rehabilitację i dodatkowe badania kontrolne.',
+            'Fundusze pokryją transport do kliniki, nocleg po zabiegu i karmę rekonwalescencyjną.',
+            'Zakupimy sprzęt rehabilitacyjny oraz zapewnimy codzienną opiekę wolontariuszy.',
+            'Środki umożliwią też aktualizację dokumentacji medycznej i profilaktykę.',
+            'W ramach zbiórki zadbamy o środki czystości, legowisko i suplementy diety.',
+        ];
+
+        $fundraiserAnimals = $animals->random(30);
 
         foreach ($fundraiserAnimals as $animal) {
             $goal = $faker->randomFloat(2, 500, 5000);
-            $status = $faker->randomElement([0, 1]); // 0: w trakcie, 1: zakończona
+            $status = $faker->randomElement([0, 1]);
 
-            // Jeśli zakończona, kwota musi być osiągnięta lub bliska
             $current = $status === 1 ? $goal : $faker->randomFloat(2, 50, $goal - 10);
 
             $randomFundraiserDate = $faker->dateTimeBetween('-12 months', 'now');
+            $titleBase = $faker->randomElement($titles);
+
+            $description = sprintf(
+                '%s %s %s',
+                sprintf($faker->randomElement($descriptionIntros), $animal->name),
+                $faker->randomElement($descriptionDetails),
+                $faker->sentence(8)
+            );
 
             $fundraiser = Fundraiser::create([
                 'animal_id' => $animal->id,
-                'title' => $faker->randomElement($titles).' - '.$animal->name,
-                'description' => 'To jest zbiórka dedykowana na ratowanie zdrowia i poprawę warunków życia tego wspaniałego zwierzaka. Zebrane środki zostaną w całości przeznaczone na leczenie, rehabilitację oraz zakup niezbędnej, specjalistycznej karmy i leków. Każda, nawet najdrobniejsza wpłata, ogromnie przybliża nas do osiągnięcia celu i sprawia, że szanse na szczęśliwe życie rosną.',
+                'title' => $titleBase.' - '.$animal->name,
+                'description' => $description,
                 'target_amount' => $goal,
                 'collected_amount' => $current,
                 'qr_token' => Str::random(10),
@@ -61,7 +85,6 @@ class FundraiserAndDonationSeeder extends Seeder
                 'updated_at' => $randomFundraiserDate,
             ]);
 
-            // Dodaj darowizny, by złożyć kwotę
             $numDonations = $faker->numberBetween(10, 50);
             foreach (range(1, $numDonations) as $j) {
                 $randomDonationDate = $faker->dateTimeBetween($randomFundraiserDate->format('Y-m-d H:i:s'), 'now');

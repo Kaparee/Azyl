@@ -1,4 +1,12 @@
+@auth
 <x-app-layout>
+@else
+@extends('layouts.public')
+
+@section('title', 'Zbiórki - Azyl')
+
+@section('content')
+@endauth
 
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -37,18 +45,16 @@
                         <div
                             class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow duration-300">
                             <div class="h-48 bg-gray-200 relative">
-                                @if ($fundraiser->animal && $fundraiser->animal->images && $fundraiser->animal->images->first())
-                                    <img src="/storage/{{ $fundraiser->animal->images->first()->file_name }}"
+                                @php
+                                    $firstImage = $fundraiser->animal?->animalImages?->sortBy('sort_order')->first();
+                                    $imagePath = $firstImage?->image?->file_name;
+                                    $hasImage = $imagePath && file_exists(public_path('storage/'.$imagePath));
+                                @endphp
+                                @if ($hasImage)
+                                    <img src="{{ asset('storage/'.$imagePath) }}"
                                         alt="{{ $fundraiser->title }}" class="w-full h-full object-cover">
                                 @else
-                                    <div class="w-full h-full bg-orange-100 flex items-center justify-center">
-                                        <svg class="w-16 h-16 text-orange-300" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
-                                            </path>
-                                        </svg>
-                                    </div>
+                                    <img src="{{ asset('images/hero_shelter.png') }}" alt="{{ $fundraiser->title }}" class="w-full h-full object-cover">
                                 @endif
 
                                 @if ($fundraiser->animal)
@@ -114,4 +120,9 @@
 
         </div>
     </div>
+
+@auth
 </x-app-layout>
+@else
+@endsection
+@endauth

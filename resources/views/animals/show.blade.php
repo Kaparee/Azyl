@@ -6,8 +6,21 @@
     @php
         $photos = $animal->animalImages
             ->sortBy('sort_order')
-            ->filter(fn ($photo) => $photo->image && file_exists(public_path('storage/'.$photo->image->file_name)));
-        $firstPhoto = $photos->first();
+            ->filter(fn ($photo) => $photo->image?->file_name)
+            ->values();
+
+        $photoUrls = $photos
+            ->map(fn ($photo) => asset('storage/'.$photo->image->file_name))
+            ->values()
+            ->all();
+
+        $speciesName = $animal->breed?->species?->name ?? null;
+        $placeholderUrl = asset(match ($speciesName) {
+            'Pies' => 'images/placeholder-dog.png',
+            'Kot' => 'images/placeholder-cat.png',
+            default => 'images/hero_shelter.png',
+        });
+
         $qrLink = route('animals.qr', $animal->qr_token);
         $statusValue = $animal->status?->value ?? $animal->status;
         $statusLabel = match ($statusValue) {
@@ -38,20 +51,40 @@
                 </div>
             @endif
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_420px]">
-                <section class="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-orange-100">
-                    @if ($firstPhoto)
-                        <img src="{{ asset('storage/'.$firstPhoto->image->file_name) }}" alt="{{ $animal->name }}" class="h-[430px] w-full rounded-3xl object-cover">
-                    @else
-                        <div class="flex h-[430px] w-full items-center justify-center rounded-3xl bg-orange-50 text-sm font-semibold text-slate-400">
-                            brak zdjęcia
-                        </div>
+            <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_420px] lg:items-start">
+                <section
+                    @if (count($photoUrls) > 1)
+                        x-data="{ active: 0, photos: @json($photoUrls) }"
                     @endif
+                    class="w-full self-start overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-orange-100"
+                >
+                    <div class="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                        @if (count($photoUrls) > 0)
+                            <img
+                                src="{{ $photoUrls[0] }}"
+                                @if (count($photoUrls) > 1)
+                                    :src="photos[active]"
+                                @endif
+                                alt="{{ $animal->name }}"
+                                class="absolute inset-0 h-full w-full object-cover"
+                                onerror="this.onerror=null; this.src='{{ $placeholderUrl }}';"
+                            >
+                        @else
+                            <x-animal-image :animal="$animal" class="absolute inset-0 h-full w-full object-cover" />
+                        @endif
+                    </div>
 
-                    @if ($photos->count() > 1)
-                        <div class="mt-4 grid grid-cols-4 gap-3 md:grid-cols-6">
-                            @foreach ($photos as $photo)
-                                <img src="{{ asset('storage/'.$photo->image->file_name) }}" alt="{{ $animal->name }}" class="h-20 w-full rounded-2xl object-cover ring-1 ring-orange-100">
+                    @if (count($photoUrls) > 1)
+                        <div class="grid grid-cols-4 gap-2 p-3 md:grid-cols-6">
+                            @foreach ($photoUrls as $index => $url)
+                                <button
+                                    type="button"
+                                    @click="active = {{ $index }}"
+                                    class="overflow-hidden rounded-xl ring-2 transition"
+                                    :class="active === {{ $index }} ? 'ring-orange-400' : 'ring-transparent hover:ring-orange-200'"
+                                >
+                                    <img src="{{ $url }}" alt="{{ $animal->name }}" class="aspect-square w-full object-cover">
+                                </button>
                             @endforeach
                         </div>
                     @endif

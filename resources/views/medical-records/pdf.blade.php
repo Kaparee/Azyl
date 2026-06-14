@@ -72,7 +72,7 @@
 
     <div class="info-box">
         <strong>Imię pacjenta:</strong> {{ $animal->name }}<br>
-        <strong>Gatunek/Rasa:</strong> {{ $animal->species->name ?? 'Brak' }} / {{ $animal->breed->name ?? 'Brak' }}<br>
+        <strong>Gatunek/Rasa:</strong> {{ $animal->breed?->species?->name ?? 'Brak' }} / {{ $animal->breed->name ?? 'Brak' }}<br>
         <strong>Wiek (miesiące):</strong> {{ $animal->age_months }}<br>
         <strong>Płeć:</strong> {{ $animal->genders == 0 ? 'Samiec' : 'Samica' }}
     </div>

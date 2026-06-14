@@ -93,15 +93,9 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             @foreach($recentAnimals as $index => $animal)
-            @php
-                $firstImage = $animal->animalImages->sortBy('sort_order')->first();
-                $imagePath = $firstImage?->image?->file_name;
-                $hasImage = $imagePath && file_exists(public_path('storage/'.$imagePath));
-                $imgSrc = $hasImage ? asset('storage/' . $imagePath) : asset('images/hero_shelter.png');
-            @endphp
             <a href="{{ route('animals.show', $animal) }}" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group flex flex-col">
                 <div class="relative h-48 bg-gray-200 shrink-0">
-                    <img src="{{ $imgSrc }}" alt="{{ $animal->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                    <x-animal-image :animal="$animal" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                     @if($index == 0)
                         <div class="absolute top-3 left-3 bg-azyl-orange text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">Nowy</div>
                     @endif
@@ -179,9 +173,10 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @foreach($recentFundraisers as $fundraiser)
             @php
-                $fundraiserImg = $fundraiser->animal && $fundraiser->animal->animalImages->sortBy('sort_order')->first()
-                    ? asset('storage/' . $fundraiser->animal->animalImages->sortBy('sort_order')->first()->image->file_name)
-                    : asset('images/hero_shelter.png');
+                $firstAnimalImage = $fundraiser->animal?->animalImages?->sortBy('sort_order')->first();
+                $imagePath = $firstAnimalImage?->image?->file_name;
+                $hasImage = $imagePath && file_exists(public_path('storage/' . $imagePath));
+                $fundraiserImg = $hasImage ? asset('storage/' . $imagePath) : asset('images/hero_shelter.png');
             @endphp
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition">
                 <div class="h-48 bg-gray-200">

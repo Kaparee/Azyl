@@ -9,6 +9,7 @@
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
+        <input type="hidden" name="redirect" value="{{ request('redirect') }}">
 
         <!-- Email Address -->
         <div class="mb-5">
@@ -30,7 +31,7 @@
         <!-- Remember Me -->
         <div class="flex items-center justify-between mb-8">
             <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-orange-500 shadow-sm focus:ring-orange-500 w-5 h-5">
+                <input id="remember_me" type="checkbox" name="remember" class="rounded border-gray-300 text-orange-500 shadow-sm focus:ring-orange-500 w-5 h-5">
                 <span class="ms-3 text-base text-gray-600">Zapamiętaj mnie</span>
             </label>
 

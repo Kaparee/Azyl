@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Animal;
 use App\Models\User;
 use App\Models\VolunteerTask;
 use Faker\Factory;
@@ -13,20 +12,34 @@ class VolunteerTaskSeeder extends Seeder
     public function run(): void
     {
         $faker = Factory::create('pl_PL');
-        $users = User::all();
+        $volunteers = User::where('role_id', 4)->get();
+        $animals = \App\Models\Animal::all();
+
+        if ($volunteers->isEmpty()) {
+            return;
+        }
 
         $tasksTemplates = [
-            ['title' => 'Wyprowadzenie na spacer', 'desc' => 'Długi spacer z psem, potrzebny wybieg'],
-            ['title' => 'Sprzątanie boksów', 'desc' => 'Konieczne dokładne umycie i dezynfekcja klatek'],
-            ['title' => 'Podanie leków', 'desc' => 'Zgodnie z rozpiską od weterynarza'],
-            ['title' => 'Socjalizacja kotów', 'desc' => 'Czas spędzony w kociarni, zabawa wędką'],
-            ['title' => 'Transport do weta', 'desc' => 'Wizyta kontrolna w klinice'],
-            ['title' => 'Mycie misek', 'desc' => 'Poranne mycie misek po śniadaniu'],
-            ['title' => 'Wyczesywanie', 'desc' => 'Pielęgnacja sierści psów z dłuższą okrywą'],
-            ['title' => 'Odpisywanie na wiadomości', 'desc' => 'Pomoc biurowa, maile od chętnych do adopcji'],
+            ['title' => 'Wyprowadzenie na spacer', 'desc' => 'Długi spacer z psem na wybiegu za schroniskiem'],
+            ['title' => 'Sprzątanie boksów', 'desc' => 'Dokładne umycie i dezynfekcja klatek w sekcji psów'],
+            ['title' => 'Podanie leków', 'desc' => 'Podanie leków zgodnie z poranną rozpiską weterynarza'],
+            ['title' => 'Socjalizacja kotów', 'desc' => 'Spokojna zabawa i kontakt w kociarni'],
+            ['title' => 'Transport do weta', 'desc' => 'Transport na kontrolną wizytę do kliniki partnerskiej'],
+            ['title' => 'Mycie misek', 'desc' => 'Mycie i uzupełnienie misek po porannym posiłku'],
+            ['title' => 'Wyczesywanie', 'desc' => 'Pielęgnacja sierści u psów z dłuższą okrywą'],
+            ['title' => 'Odpisywanie na wiadomości', 'desc' => 'Pomoc biurowa — odpowiedzi na zapytania adopcyjne'],
         ];
 
-        $animals = Animal::all();
+        $taskNotes = [
+            'Prosimy o zgłoszenie wykonania w systemie po zakończeniu.',
+            'W razie wątpliwości skontaktuj się z opiekunem zmiany.',
+            'Sprzęt znajduje się w magazynie przy wejściu do boksów.',
+            'Zadanie priorytetowe dla dobrostanu zwierząt w tej sekcji.',
+            'Uwaga: zwierzę może być nieco lękliwe — zachowaj spokój i cierpliwość.',
+            'Po zadaniu uzupełnij krótką notatkę w planie dnia.',
+            'Wymagane rękawiczki i fartuch — leżą w szafce przy recepcji.',
+            'Można wykonać w parze z innym wolontariuszem.',
+        ];
 
         foreach (range(1, 40) as $i) {
             $template = $faker->randomElement($tasksTemplates);
@@ -37,11 +50,18 @@ class VolunteerTaskSeeder extends Seeder
 
             VolunteerTask::create([
                 'title' => $template['title'].' - '.$animalName,
-                'description' => $template['desc'].'. Bardzo prosimy o rzetelne wykonanie tego zadania i odznaczenie w systemie po ukończeniu.',
+                'description' => sprintf(
+                    '%s. Dotyczy podopiecznego: %s. %s %s',
+                    $template['desc'],
+                    $animalName,
+                    $faker->randomElement($taskNotes),
+                    $faker->sentence(6)
+                ),
                 'date' => $randomDate,
                 'time' => $randomTime,
                 'status' => $faker->randomElement([1, 2, 3]),
-                'assigned_to' => $users->random()->id,
+                'is_urgent' => $faker->boolean(20),
+                'assigned_to' => $volunteers->random()->id,
             ]);
         }
     }

@@ -49,15 +49,20 @@
             <!-- ANIMAL CARD -->
             <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
                 <div class="h-64 bg-gray-200 relative">
-                    @if($application->animal->images && $application->animal->images->count() > 0)
-                        <img src="{{ Storage::url($application->animal->images->first()->path) }}" class="w-full h-full object-cover">
+                    @php
+                        $firstImage = $application->animal->animalImages->sortBy('sort_order')->first();
+                        $imagePath = $firstImage?->image?->file_name;
+                        $hasImage = $imagePath && file_exists(public_path('storage/' . $imagePath));
+                    @endphp
+                    @if($hasImage)
+                        <img src="{{ asset('storage/' . $imagePath) }}" class="w-full h-full object-cover">
                     @else
-                        <div class="w-full h-full flex items-center justify-center text-6xl text-white font-bold opacity-50 bg-gray-400">{{ substr($application->animal->name, 0, 1) }}</div>
+                        <img src="{{ asset('images/hero_shelter.png') }}" class="w-full h-full object-cover">
                     @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent"></div>
                     <div class="absolute bottom-6 left-6 text-white">
                         <h3 class="text-3xl font-black mb-1">{{ $application->animal->name }}</h3>
-                        <p class="text-gray-200 font-medium">{{ $application->animal->species->name ?? 'Zwierzę' }} &bull; {{ $application->animal->breed->name ?? 'Mieszaniec' }}</p>
+                        <p class="text-gray-200 font-medium">{{ $application->animal->breed?->species?->name ?? 'Zwierzę' }} &bull; {{ $application->animal->breed->name ?? 'Mieszaniec' }}</p>
                     </div>
                 </div>
                 <div class="p-6">
@@ -65,45 +70,72 @@
                     <ul class="space-y-3">
                         <li class="flex justify-between items-center py-2 border-b border-gray-50">
                             <span class="text-gray-500">Płeć</span>
-                            <span class="font-bold text-gray-900">{{ $application->animal->gender === 1 ? 'Samiec' : 'Samica' }}</span>
+                            <span class="font-bold text-gray-900">{{ $application->animal->genders === 0 ? 'Samiec' : 'Samica' }}</span>
                         </li>
                         <li class="flex justify-between items-center py-2 border-b border-gray-50">
                             <span class="text-gray-500">Wiek</span>
-                            <span class="font-bold text-gray-900">{{ $application->animal->age ?? 'Nieznany' }} lat</span>
+                            <span class="font-bold text-gray-900">
+                                @if($application->animal->age_months)
+                                    @if($application->animal->age_months >= 12)
+                                        {{ floor($application->animal->age_months / 12) }} lat{{ floor($application->animal->age_months / 12) == 1 ? '' : (floor($application->animal->age_months / 12) < 5 ? 'a' : '') }}
+                                        @if($application->animal->age_months % 12 > 0)
+                                             {{ $application->animal->age_months % 12 }} mies.
+                                        @endif
+                                    @else
+                                        {{ $application->animal->age_months }} mies.
+                                    @endif
+                                @else
+                                    Nieznany
+                                @endif
+                            </span>
                         </li>
                         <li class="flex justify-between items-center py-2">
                             <span class="text-gray-500">Status</span>
-                            <span class="font-bold text-gray-900">{{ $application->animal->status->name ?? 'W schronisku' }}</span>
+                            <span class="font-bold text-gray-900">{{ $application->animal->status?->label() ?? 'W schronisku' }}</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
             <!-- APPLICATION DETAILS -->
-            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 flex flex-col">
-                <div class="mb-6 flex items-center gap-3 pb-4 border-b border-gray-100">
-                    <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+            <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 flex flex-col justify-between">
+                <div>
+                    <div class="mb-6 flex items-center gap-3 pb-4 border-b border-gray-100">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Twoja wiadomość</h3>
+                            <p class="text-sm text-gray-500">Wysłana podczas składania wniosku</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900">Twoja wiadomość</h3>
-                        <p class="text-sm text-gray-500">Wysłana podczas składania wniosku</p>
+                    
+                    <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 relative min-h-[120px]">
+                        <svg class="absolute top-4 left-4 w-8 h-8 text-gray-200" fill="currentColor" viewBox="0 0 32 32"><path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-2.2 1.8-4 4-4V8zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8z"></path></svg>
+                        <p class="text-gray-700 leading-relaxed relative z-10 pl-8 pt-2">
+                            {!! nl2br(e($application->message ?? 'Brak dodatkowej wiadomości.')) !!}
+                        </p>
                     </div>
                 </div>
                 
-                <div class="flex-1 bg-gray-50 rounded-2xl p-6 border border-gray-100 relative">
-                    <svg class="absolute top-4 left-4 w-8 h-8 text-gray-200" fill="currentColor" viewBox="0 0 32 32"><path d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-2.2 1.8-4 4-4V8zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-2.2 1.8-4 4-4V8z"></path></svg>
-                    <p class="text-gray-700 leading-relaxed relative z-10 pl-8 pt-2">
-                        {!! nl2br(e($application->message ?? 'Brak dodatkowej wiadomości.')) !!}
-                    </p>
-                </div>
-                
-                <div class="mt-8 bg-blue-50 border border-blue-100 rounded-2xl p-5 flex items-start gap-4">
-                    <svg class="w-6 h-6 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <div>
-                        <h4 class="font-bold text-blue-900 text-sm mb-1">Co dalej?</h4>
-                        <p class="text-sm text-blue-700">Oczekuj na kontakt telefoniczny ze strony naszych pracowników. Jeśli masz pytania, skontaktuj się z biurem podając datę złożenia wniosku.</p>
-                    </div>
+                <div class="mt-6">
+                    @if($application->status->name === 'PENDING')
+                        <form method="POST" action="{{ route('user.adoption-applications.destroy', $application) }}" onsubmit="return confirm('Czy na pewno chcesz usunąć ten wniosek?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full py-3 px-4 bg-red-500 hover:bg-red-600 text-white font-bold text-sm rounded-xl shadow transition-colors duration-200 text-center">
+                                Usuń / Anuluj wniosek
+                            </button>
+                        </form>
+                    @else
+                        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 flex items-start gap-4">
+                            <svg class="w-6 h-6 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h4 class="font-bold text-blue-900 text-sm mb-1">Co dalej?</h4>
+                                <p class="text-sm text-blue-700 font-medium">Status wniosku uległ zmianie. Skontaktuj się z biurem schroniska w celu uzyskania dalszych instrukcji.</p>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

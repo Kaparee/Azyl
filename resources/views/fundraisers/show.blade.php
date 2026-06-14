@@ -1,4 +1,12 @@
+@auth
 <x-app-layout>
+@else
+@extends('layouts.public')
+
+@section('title', $fundraiser->title.' - Zbiórka')
+
+@section('content')
+@endauth
 
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -13,6 +21,24 @@
                     Powrót do wszystkich zbiórek
                 </a>
             </div>
+
+            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Admin', 'Pracownik']))
+                <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-700">Opcje administracyjne:</span>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('admin.fundraisers.edit', $fundraiser) }}" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition-colors">
+                            Edytuj zbiórkę
+                        </a>
+                        <form action="{{ route('admin.fundraisers.destroy', $fundraiser) }}" method="POST" onsubmit="return confirm('Czy na pewno chcesz usunąć tę zbiórkę?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-sm transition-colors">
+                                Usuń zbiórkę
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
 
             @php
                 $percent =
@@ -47,7 +73,7 @@
                                     <h4 class="text-sm font-bold text-gray-900">Zbiórka dedykowana dla:
                                         {{ $fundraiser->animal->name }}</h4>
                                     <p class="text-xs text-gray-500 mt-0.5">Wiek: {{ $fundraiser->animal->age_months }}
-                                        miesięcy | Płeć: {{ $fundraiser->animal->genders == 1 ? 'Samiec' : 'Samica' }}
+                                        miesięcy | Płeć: {{ $fundraiser->animal->genders == 0 ? 'Samiec' : 'Samica' }}
                                     </p>
                                 </div>
                             </div>
@@ -89,6 +115,7 @@
                             </div>
                         @endif
 
+                        @auth
                         <form action="{{ route('donation.store') }}" method="POST"
                             class="space-y-4 pt-4 border-t border-gray-100">
                             @csrf
@@ -117,6 +144,14 @@
                                 Wesprzyj teraz
                             </button>
                         </form>
+                        @else
+                        <div class="pt-4 border-t border-gray-100 text-center">
+                            <p class="text-sm text-gray-500 mb-3">Zaloguj się, aby wesprzeć tę zbiórkę.</p>
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="inline-block w-full py-2.5 px-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm rounded-lg shadow-sm transition-colors">
+                                Zaloguj się
+                            </a>
+                        </div>
+                        @endauth
                     </div>
 
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -151,4 +186,9 @@
 
         </div>
     </div>
+
+@auth
 </x-app-layout>
+@else
+@endsection
+@endauth

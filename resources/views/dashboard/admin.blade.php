@@ -125,77 +125,7 @@
 
         </div>
 
-        <!-- URGENT TASKS -->
-        <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-xl font-bold text-gray-900">Pilne zadania do wykonania</h3>
-                    <p class="text-sm text-gray-500">Zlecenia wolontariuszy wymagające uwagi.</p>
-                </div>
-                <a href="{{ route('volunteer-tasks.index') }}" class="text-sm font-bold text-[#FF6B35] hover:text-orange-600 bg-orange-50 px-4 py-2 rounded-full transition-colors">Zobacz wszystkie &rarr;</a>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @forelse($urgentTasks as $task)
-                    <div class="group flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
-                        <div class="w-12 h-12 flex-shrink-0 bg-[#FF6B35]/10 text-[#FF6B35] rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-gray-900 text-base mb-1 truncate">{{ $task->title }}</h4>
-                            <p class="text-sm text-gray-500 line-clamp-1">{{ $task->description }}</p>
-                        </div>
-                        <div class="shrink-0 pt-1 text-right">
-                            <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold font-mono rounded-lg border border-yellow-200">
-                                {{ \Carbon\Carbon::parse($task->time)->format('H:i') }}
-                            </span>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-2 text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <p class="text-gray-500 font-medium">Brak pilnych zadań. Świetna robota!</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
     </div>
-
-        <!-- WORKER TASKS -->
-        <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 mt-8">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h3 class="text-xl font-bold text-gray-900">Zadania pracowników</h3>
-                    <p class="text-sm text-gray-500">Nadchodzące obowiązki przypisane pracownikom schroniska.</p>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @forelse($workerTasks as $task)
-                    <div class="group flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all duration-300">
-                        <div class="w-12 h-12 flex-shrink-0 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-gray-900 text-base mb-1 truncate">{{ $task->title }}</h4>
-                            <p class="text-sm text-gray-500 line-clamp-1">Przypisano: <span class="font-semibold">{{ $task->assignedUser->name ?? 'Nieznany' }}</span></p>
-                        </div>
-                        <div class="shrink-0 pt-1 text-right flex flex-col items-end gap-1">
-                            <span class="inline-block px-3 py-1 {{ $task->status == 1 ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : 'bg-blue-100 text-blue-800 border-blue-200' }} text-xs font-bold rounded-lg border">
-                                {{ $task->status == 1 ? 'Oczekuje' : 'W trakcie' }}
-                            </span>
-                            <span class="text-xs font-mono text-gray-500 font-medium">
-                                {{ \Carbon\Carbon::parse($task->time)->format('H:i') }}
-                            </span>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-span-2 text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <p class="text-gray-500 font-medium">Brak nadchodzących zadań dla pracowników.</p>
-                    </div>
-                @endforelse
-            </div>
-        </div>
 
     <!-- SKRYPTY WYKRESÓW -->
     <script>

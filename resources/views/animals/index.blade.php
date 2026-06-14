@@ -125,9 +125,7 @@
                                     @if ($hasImage)
                                         <img src="{{ asset('storage/'.$imagePath) }}" alt="{{ $animal->name }}" class="h-56 w-full object-cover">
                                     @else
-                                        <div class="flex h-56 w-full items-center justify-center bg-orange-50 text-sm font-semibold text-slate-400">
-                                            brak zdjęcia
-                                        </div>
+                                        <img src="{{ asset('images/hero_shelter.png') }}" alt="{{ $animal->name }}" class="h-56 w-full object-cover">
                                     @endif
 
                                     <div class="absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ring-1 {{ $statusClass }}">

@@ -87,4 +87,28 @@ class AnimalCatalogController extends Controller
 
         return redirect()->route('animals.show', $animal);
     }
+
+    /**
+     * Read-only catalog for volunteers in the panel.
+     */
+    public function panelIndex(Request $request)
+    {
+        $query = Animal::with(['breed.species', 'animalImages.image']);
+
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('breed', function($qb) use ($request) {
+                      $qb->where('name', 'like', '%' . $request->search . '%')
+                        ->orWhereHas('species', function($qs) use ($request) {
+                            $qs->where('name', 'like', '%' . $request->search . '%');
+                        });
+                  });
+            });
+        }
+
+        $animals = $query->paginate(10)->withQueryString();
+
+        return view('volunteer.animals.index', compact('animals'));
+    }
 }

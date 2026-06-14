@@ -64,7 +64,7 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent"></div>
                     <div class="absolute bottom-6 left-6 text-white">
                         <h3 class="text-3xl font-black mb-1">{{ $application->animal->name }}</h3>
-                        <p class="text-gray-200 font-medium">{{ $application->animal->species->name ?? 'Zwierzę' }} &bull; {{ $application->animal->breed->name ?? 'Mieszaniec' }}</p>
+                        <p class="text-gray-200 font-medium">{{ $application->animal->breed?->species?->name ?? 'Zwierzę' }} &bull; {{ $application->animal->breed->name ?? 'Mieszaniec' }}</p>
                     </div>
                 </div>
                 <div class="p-6">

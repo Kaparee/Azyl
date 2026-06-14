@@ -65,7 +65,7 @@
             </div>
         </div>
 
-        <!-- Filters & View Toggle -->
+        <!-- Filters -->
         <div class="flex items-center justify-between border-b border-gray-200 pb-4">
             <div class="flex items-center gap-2">
                 <a href="?status=" class="{{ request('status') == '' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Wszystkie</a>
@@ -73,19 +73,10 @@
                 <a href="?status=2" class="{{ request('status') == '2' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">W trakcie</a>
                 <a href="?status=3" class="{{ request('status') == '3' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:text-gray-700' }} px-4 py-1.5 rounded-full text-sm font-medium">Wykonano</a>
             </div>
-            <div class="flex bg-gray-100 p-1 rounded-lg">
-                <button @click="viewMode = 'list'" :class="{'bg-white shadow-sm text-gray-900': viewMode === 'list', 'text-gray-500': viewMode !== 'list'}" class="px-3 py-1.5 text-sm font-medium rounded-md transition-all">Lista zadań</button>
-                <button @click="viewMode = 'calendar'; setTimeout(() => window.dispatchEvent(new Event('resize')), 100)" :class="{'bg-white shadow-sm text-gray-900': viewMode === 'calendar', 'text-gray-500': viewMode !== 'calendar'}" class="px-3 py-1.5 text-sm font-medium rounded-md transition-all">Kalendarz</button>
-            </div>
-        </div>
-        
-        <!-- Calendar View -->
-        <div x-show="viewMode === 'calendar'" style="display: none;" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mt-4">
-            <div id="calendar"></div>
         </div>
 
         <!-- Tasks List View -->
-        <div x-show="viewMode === 'list'" class="space-y-4">
+        <div x-show="viewMode === 'list'" class="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
             @forelse($tasks as $task)
             <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex gap-4 {{ $task->status == 3 ? 'opacity-60' : '' }}">
                 <div class="pt-1 shrink-0">
@@ -106,11 +97,16 @@
                             </h4>
                             <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                {{ \Carbon\Carbon::parse($task->time)->format('H:i') }} (15 min)
-                                @if(in_array($task->title, ['Leki - Zeus', 'Kontrola - Cleo']))
-                                <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold">Pilne</span>
+                                {{ \Carbon\Carbon::parse($task->time)->format('H:i') }}
+                                @if($task->is_urgent)
+                                <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">Pilne</span>
                                 @endif
                             </div>
+                            @if($task->assignedUser)
+                            <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                👤 Przypisano: <span class="font-semibold text-slate-700">{{ $task->assignedUser->name }}</span>
+                            </div>
+                            @endif
                         </div>
                         
                         @if($task->status == 3)
@@ -172,10 +168,6 @@
             @endforelse
         </div>
 
-        <div class="mt-4" x-show="viewMode === 'list'">
-            {{ $tasks->links() }}
-        </div>
-
         @if(in_array(Auth::user()->role_id, [1, 2, 3]))
         <!-- Modal: Dodaj Zadanie -->
         <div x-show="showTaskModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -208,6 +200,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Szczegóły (Opcjonalnie)</label>
                         <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm" placeholder="Dodatkowe informacje dla wolontariusza..."></textarea>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_urgent" id="is_urgent" value="1" class="rounded border-gray-300 text-orange-500 shadow-sm focus:ring-orange-500">
+                        <label for="is_urgent" class="text-sm font-medium text-gray-700">Oznacz jako pilne</label>
                     </div>
                     
                     <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
@@ -260,6 +256,10 @@
                         <label class="block text-sm font-medium text-gray-700">Szczegóły (Opcjonalnie)</label>
                         <textarea name="description" rows="3" x-model="selectedTask ? selectedTask.description : ''" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm"></textarea>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_urgent" id="edit_is_urgent" value="1" :checked="selectedTask?.is_urgent" class="rounded border-gray-300 text-orange-500 shadow-sm focus:ring-orange-500">
+                        <label for="edit_is_urgent" class="text-sm font-medium text-gray-700">Oznacz jako pilne</label>
+                    </div>
                     
                     <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
                         <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">Anuluj</button>
@@ -292,57 +292,8 @@
 
     </div>
 
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var tasks = @json($allTasks);
-            
-            var events = tasks.map(function(task) {
-                var color = '#6b7280'; // Gray (default)
-                if (task.status === 1) color = '#ef4444'; // Red (urgent/waiting)
-                if (task.status === 2) color = '#3b82f6'; // Blue (in progress)
-                if (task.status === 3) color = '#10b981'; // Green (completed)
-                
-                return {
-                    id: task.id,
-                    title: task.title,
-                    start: task.date + 'T' + task.time,
-                    backgroundColor: color,
-                    borderColor: color,
-                    extendedProps: {
-                        description: task.description,
-                        status: task.status
-                    }
-                };
-            });
-
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                locale: 'pl',
-                events: events,
-                slotMinTime: '06:00:00',
-                slotMaxTime: '22:00:00',
-                allDaySlot: false,
-                height: 600,
-                eventClick: function(info) {
-                    // Could open task details here
-                    alert('Zadanie: ' + info.event.title + '\nOpis: ' + (info.event.extendedProps.description || 'Brak'));
-                }
-            });
-            
-            calendar.render();
-
-            // Resize calendar when tab is shown
-            window.addEventListener('resize', function() {
-                calendar.updateSize();
-            });
-
             // Initialize TomSelect for searchable dropdowns
             document.querySelectorAll('.searchable-select').forEach(function(el) {
                 new TomSelect(el, {
@@ -353,4 +304,10 @@
             });
         });
     </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #E5E7EB; border-radius: 20px; }
+    </style>
 </x-app-layout>

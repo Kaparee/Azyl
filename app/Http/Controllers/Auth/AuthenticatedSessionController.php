@@ -28,9 +28,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $redirectUrl = $request->input('redirect', route('dashboard', absolute: false));
+        $redirectUrl = $request->input('redirect');
 
-        return redirect()->intended($redirectUrl);
+        if ($redirectUrl && $this->isSafeRedirect($redirectUrl, $request)) {
+            return redirect()->to($redirectUrl);
+        }
+
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
@@ -45,5 +49,16 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function isSafeRedirect(string $url, Request $request): bool
+    {
+        if (str_starts_with($url, '/') && ! str_starts_with($url, '//')) {
+            return true;
+        }
+
+        $parsed = parse_url($url);
+
+        return isset($parsed['host']) && $parsed['host'] === $request->getHost();
     }
 }

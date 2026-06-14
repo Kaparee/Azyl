@@ -7,6 +7,7 @@ use App\Enums\AnimalStatus;
 use App\Models\AdoptionApplication;
 use App\Models\Animal;
 use App\Models\User;
+use Carbon\Carbon;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 
@@ -16,45 +17,92 @@ class AdoptionApplicationSeeder extends Seeder
     {
         $faker = Faker::create('pl_PL');
         $users = User::whereIn('role_id', [4, 5])->get();
-        $animals = Animal::all();
+        $animals = Animal::where('status', AnimalStatus::AVAILABLE)->get();
 
         if ($users->isEmpty() || $animals->isEmpty()) {
             return;
         }
 
-        $messages = [
-            'Mam duży dom z ogrodem, pracuję zdalnie, więc pies będzie miał stałą opiekę. Mieszkam z partnerem, nie mamy dzieci.',
-            'Mieszkamy w bloku na parterze. Mieliśmy już wcześniej psa ze schroniska. Jesteśmy aktywną rodziną, uwielbiamy długie spacery.',
-            'Zakochałam się w tym zwierzaku od pierwszego wejrzenia! Mam już jednego kota, szukam mu towarzysza.',
-            'Szukamy spokojnego przyjaciela dla naszej starszej babci. Zwierzę będzie mieszkało w domu.',
-            'Mam doświadczenie z trudnymi psami. Chętnie podejmę się pracy z behawiorystą jeśli będzie trzeba.',
-            'Mieszkam sam w mieszkaniu 50m2. Chciałbym zaadoptować kota. Okna mam zabezpieczone siatką.',
-            'Bardzo prosimy o rozpatrzenie naszego wniosku. Dzieci od dawna marzą o psie, a my jesteśmy gotowi na ten obowiązek.',
+        $messageOpenings = [
+            'Chcielibyśmy zapewnić temu zwierzakowi dom pełen ciepła i bezpieczeństwa.',
+            'Szukamy towarzysza do naszej rodziny, który będzie traktowany jak członek domowników.',
+            'Mamy doświadczenie w opiece nad zwierzętami ze schroniska i jesteśmy gotowi na adopcję.',
+            'Po długich rozmowach zdecydowaliśmy się złożyć wniosek — czujemy, że to dobre dopasowanie.',
+            'Mieszkamy w spokojnej okolicy i możemy poświęcić zwierzęciu dużo czasu każdego dnia.',
+            'Pracuję zdalnie, więc pupil nie będzie zostawał sam na długie godziny.',
+            'Mamy zabezpieczone okna i balkon — dbamy o bezpieczeństwo kota w mieszkaniu.',
+            'Dzieci w naszym domu dorastały z psem i wiedzą, jak delikatnie obchodzić się ze zwierzętami.',
         ];
 
-        foreach ($animals as $animal) {
-            $numApplications = $faker->numberBetween(1, 3);
+        $messageDetails = [
+            'Prosimy o rozpatrzenie wniosku i kontakt w celu spotkania zapoznawczego.',
+            'Jesteśmy otwarci na wizytę pracownika schroniska w naszym domu.',
+            'Możemy przyjechać na spotkanie z zwierzęciem w dogodnym dla Państwa terminie.',
+            'W razie potrzeby skorzystamy z pomocy behawiorysty w okresie adaptacji.',
+            'Zapewnimy stałą opiekę weterynaryjną i odpowiednią dietę.',
+            'W domu mamy ogród ogrodzony — idealny do spacerów i zabawy.',
+            'Poprzedni pupil żył u nas 12 lat — wiemy, czym jest odpowiedzialna adopcja.',
+            'Chętnie podejmiemy się dodatkowych zaleceń ze strony schroniska.',
+        ];
 
-            for ($i = 0; $i < $numApplications; $i++) {
-                $status = $faker->randomElement([AdoptionStatus::PENDING, AdoptionStatus::APPROVED, AdoptionStatus::REJECTED]);
-                $randomDate = $faker->dateTimeBetween('-6 months', 'now');
+        $approvedAnimals = $animals->shuffle()->take(min(18, $animals->count()));
+        foreach ($approvedAnimals as $animal) {
+            $approvedAt = Carbon::now()
+                ->subMonths($faker->numberBetween(0, 11))
+                ->day($faker->numberBetween(1, 28));
+            $createdAt = (clone $approvedAt)->subDays($faker->numberBetween(3, 21));
 
-                AdoptionApplication::firstOrCreate(
-                    [
-                        'user_id' => $users->random()->id,
-                        'animal_id' => $animal->id,
-                    ],
-                    [
-                        'status' => $status,
-                        'message' => $faker->randomElement($messages),
-                        'created_at' => $randomDate,
-                        'updated_at' => $randomDate,
-                    ]
-                );
+            AdoptionApplication::create([
+                'user_id' => $users->random()->id,
+                'animal_id' => $animal->id,
+                'status' => AdoptionStatus::APPROVED,
+                'message' => sprintf(
+                    'Wniosek o adopcję %s. %s %s %s',
+                    $animal->name,
+                    $faker->randomElement($messageOpenings),
+                    $faker->randomElement($messageDetails),
+                    $faker->sentence(7)
+                ),
+                'created_at' => $createdAt,
+                'updated_at' => $approvedAt,
+            ]);
 
-                if ($status === AdoptionStatus::APPROVED) {
-                    $animal->update(['status' => AnimalStatus::ADOPTED]);
-                }
+            $animal->update(['status' => AnimalStatus::ADOPTED]);
+        }
+
+        $remaining = Animal::where('status', AnimalStatus::AVAILABLE)->get();
+        $targetAnimals = $remaining->random(min(12, $remaining->count()));
+
+        foreach ($targetAnimals as $animal) {
+            $status = $faker->randomElement([
+                AdoptionStatus::PENDING,
+                AdoptionStatus::PENDING,
+                AdoptionStatus::REJECTED,
+            ]);
+
+            $randomDate = $faker->dateTimeBetween('-3 months', 'now');
+
+            AdoptionApplication::firstOrCreate(
+                [
+                    'user_id' => $users->random()->id,
+                    'animal_id' => $animal->id,
+                ],
+                [
+                    'status' => $status,
+                    'message' => sprintf(
+                        'Wniosek o adopcję %s. %s %s %s',
+                        $animal->name,
+                        $faker->randomElement($messageOpenings),
+                        $faker->randomElement($messageDetails),
+                        $faker->sentence(7)
+                    ),
+                    'created_at' => $randomDate,
+                    'updated_at' => $randomDate,
+                ]
+            );
+
+            if ($status === AdoptionStatus::PENDING) {
+                $animal->update(['status' => AnimalStatus::PENDING]);
             }
         }
     }

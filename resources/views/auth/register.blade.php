@@ -26,8 +26,8 @@
             <x-input-label for="role_id" :value="__('Dołączam jako')" class="text-lg font-medium" />
             <select id="role_id" name="role_id" class="block mt-2 w-full rounded-lg border-gray-300 focus:border-orange-500 focus:ring-orange-500 text-lg p-3" required>
                 <option value="" disabled selected>Wybierz rolę...</option>
-                <option value="2">Wolontariusz</option>
-                <option value="3">Adoptujący</option>
+                <option value="4" @selected(old('role_id') == 4)>Wolontariusz</option>
+                <option value="5" @selected(old('role_id') == 5)>Adoptujący</option>
             </select>
             <x-input-error :messages="$errors->get('role_id')" class="mt-2" />
         </div>

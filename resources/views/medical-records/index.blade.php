@@ -11,25 +11,9 @@
                 Nowy wpis
             </button>
         </div>
-
-        <!-- Alert Box -->
-        <div class="bg-red-50 border border-red-100 rounded-xl p-4 flex gap-3">
-            <svg class="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <div class="space-y-2">
-                <p class="text-sm text-red-700"><span class="font-bold text-gray-900">Cleo</span> – Leczenie infekcji górnych dróg oddechowych (kontrola była: 2025-04-16)</p>
-                <p class="text-sm text-red-700"><span class="font-bold text-gray-900">Bolt</span> – Kastracja (kontrola była: 2025-04-12)</p>
-            </div>
-        </div>
-
         <div class="flex flex-col lg:flex-row gap-6">
             <!-- Left Column: Animal List -->
             <div class="flex-1 space-y-4">
-                <!-- Search -->
-                <form method="GET" action="{{ route('medical-records.index') }}" class="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center shadow-sm">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Szukaj zwierzęcia (wciśnij Enter)..." class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-full text-gray-700 placeholder-gray-400">
-                </form>
-
                 @foreach($animals as $animal)
                 <div x-data="{ expanded: false }" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                     <div @click="expanded = !expanded" class="flex items-center justify-between cursor-pointer">
@@ -110,46 +94,22 @@
                         <h3 class="font-bold text-gray-900">Filtruj wpisy</h3>
                     </div>
                     <div class="p-2 space-y-1">
-                        <div class="bg-orange-500 text-white rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3 cursor-pointer shadow-sm">
+                        <a href="{{ route('medical-records.index', request()->except('treatment_type')) }}" class="block {{ !request('treatment_type') ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50' }} rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3 shadow-sm">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                             Wszystkie typy
-                        </div>
-                        <div class="text-gray-600 rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3 cursor-pointer hover:bg-gray-50">
+                        </a>
+                        <a href="{{ route('medical-records.index', array_merge(request()->query(), ['treatment_type' => 'Szczepienie'])) }}" class="block {{ request('treatment_type') === 'Szczepienie' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50' }} rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3">
                             💉 Szczepienie
-                        </div>
-                        <div class="text-gray-600 rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3 cursor-pointer hover:bg-gray-50">
+                        </a>
+                        <a href="{{ route('medical-records.index', array_merge(request()->query(), ['treatment_type' => 'Zabieg'])) }}" class="block {{ request('treatment_type') === 'Zabieg' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50' }} rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3">
                             ✂️ Zabieg
-                        </div>
-                        <div class="text-gray-600 rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3 cursor-pointer hover:bg-gray-50">
+                        </a>
+                        <a href="{{ route('medical-records.index', array_merge(request()->query(), ['treatment_type' => 'Leki'])) }}" class="block {{ request('treatment_type') === 'Leki' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50' }} rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3">
                             💊 Leki
-                        </div>
-                        <div class="text-gray-600 rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3 cursor-pointer hover:bg-gray-50">
+                        </a>
+                        <a href="{{ route('medical-records.index', array_merge(request()->query(), ['treatment_type' => 'Badanie'])) }}" class="block {{ request('treatment_type') === 'Badanie' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50' }} rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-3">
                             🩺 Badanie
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Nadchodzące kontrole -->
-                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 flex items-center gap-2">
-                        <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        <h3 class="font-bold text-gray-900">Nadchodzące kontrole</h3>
-                    </div>
-                    <div class="p-4 space-y-4">
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full bg-gray-200 shrink-0"></div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900 leading-tight">Cleo – Badanie kwarantannowe</p>
-                                <p class="text-xs text-gray-500">2025-04-28</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-3">
-                            <div class="w-8 h-8 rounded-full bg-gray-200 shrink-0"></div>
-                            <div>
-                                <p class="text-sm font-medium text-gray-900 leading-tight">Luna – Odrobaczanie</p>
-                                <p class="text-xs text-gray-500">2025-07-18</p>
-                            </div>
-                        </div>
+                        </a>
                     </div>
                 </div>
 

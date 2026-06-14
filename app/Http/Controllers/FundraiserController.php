@@ -2,43 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AnimalStatus;
 use App\Http\Requests\StoreFundraiserRequest;
-use App\Models\Fundraiser;
 use App\Models\Animal;
+use App\Models\Fundraiser;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-// Controller, ktory zarzadza wyswietlaniem - w skrocie
-
-// Wyświetlanie
 class FundraiserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Taki entity framework ale w laravelu
-        $fundraisers = Fundraiser::with('animal')
-            ->where('status', 1)
-            ->latest()
-            ->paginate(12);
+        $query = Fundraiser::with(['animal.animalImages.image'])
+            ->where('status', 1);
 
-        // Zwrot vidoku blade
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
+            });
+        }
+
+        $fundraisers = $query->latest()->paginate(12)->withQueryString();
+
         return view('fundraisers.index', compact('fundraisers'));
     }
 
-    // Towrzenie
     public function create()
     {
-        $animals = Animal::where('status', 0)->get();
+        $animals = Animal::where('status', AnimalStatus::AVAILABLE)->get();
+
         return view('fundraisers.create', compact('animals'));
     }
 
     public function store(StoreFundraiserRequest $request)
     {
-        // petla ktora sprawdza czy dany qrkod juz nie jest w bazie, generuje dopoki nie bedzie unikalny, taki o smaczek
         do {
             $qrToken = Str::random(32);
         } while (Fundraiser::where('qr_token', $qrToken)->exists());
 
-        // tworzymy nowa zbiore piekna
         $fundraiser = Fundraiser::create([
             'animal_id' => $request->animal_id,
             'title' => $request->title,
@@ -50,20 +53,49 @@ class FundraiserController extends Controller
             'end_date' => $request->end_date,
         ]);
 
-        // Przekierowanie do listy zbiórek po utworzeniu
         return redirect()->route('fundraisers.index')
             ->with('success', 'Zbiórka została utworzona pomyślnie');
     }
 
-    // Pojedyncz zbiorka w sumie
     public function show(Fundraiser $fundraiser)
     {
-        // Sciaganie Eager
-        $fundraiser->load(['animal', 'donations' => function($q) {
+        $fundraiser->load(['animal', 'donations' => function ($q) {
             $q->latest()->take(5)->with('user');
         }]);
 
-        // compact to jak prasa hydrauliczna, bierze se obiekt i se go wrzuca do widoku
         return view('fundraisers.show', compact('fundraiser'));
+    }
+
+    public function edit(Fundraiser $fundraiser)
+    {
+        $animals = Animal::where('status', AnimalStatus::AVAILABLE)
+            ->orWhere('id', $fundraiser->animal_id)
+            ->get();
+
+        return view('fundraisers.edit', compact('fundraiser', 'animals'));
+    }
+
+    public function update(Request $request, Fundraiser $fundraiser)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'target_amount' => 'required|numeric|min:1',
+            'animal_id' => 'nullable|exists:animals,id',
+            'end_date' => 'nullable|date',
+        ]);
+
+        $fundraiser->update($validated);
+
+        return redirect()->route('fundraisers.show', $fundraiser)
+            ->with('success', 'Zbiórka została zaktualizowana pomyślnie');
+    }
+
+    public function destroy(Fundraiser $fundraiser)
+    {
+        $fundraiser->delete();
+
+        return redirect()->route('fundraisers.index')
+            ->with('success', 'Zbiórka została usunięta pomyślnie');
     }
 }

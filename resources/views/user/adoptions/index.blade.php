@@ -32,16 +32,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($applications as $app)
                         <a href="{{ route('user.adoption-applications.show', $app) }}" class="group relative bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
-                            <div class="h-32 bg-gradient-to-br from-gray-200 to-gray-300 relative">
-                                @if($app->animal->images && $app->animal->images->count() > 0)
-                                    <img src="{{ Storage::url($app->animal->images->first()->path) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                @else
-                                    <div class="w-full h-full flex items-center justify-center text-4xl text-white font-bold opacity-50 bg-gray-400">{{ substr($app->animal->name, 0, 1) }}</div>
-                                @endif
+                            <div class="h-32 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
+                                <x-animal-image :animal="$app->animal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
                                 <div class="absolute bottom-3 left-4 text-white">
                                     <h3 class="font-bold text-xl">{{ $app->animal->name }}</h3>
-                                    <p class="text-xs text-gray-300">{{ $app->animal->species->name ?? 'Zwierzę' }}</p>
+                                    <p class="text-xs text-gray-300">{{ $app->animal->breed?->species?->name ?? 'Zwierzę' }}</p>
                                 </div>
                             </div>
                             <div class="p-5 flex-1 flex flex-col justify-between bg-white">

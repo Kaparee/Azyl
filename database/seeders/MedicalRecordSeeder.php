@@ -23,17 +23,34 @@ class MedicalRecordSeeder extends Seeder
             'Profilaktyka' => ['Zabezpieczenie na kleszcze', 'Obcięcie pazurów'],
         ];
 
+        $outcomes = [
+            'Pacjent zniósł zabieg bez powikłań i wrócił do boksu w dobrym stanie.',
+            'Wymagana obserwacja przez 48 godzin — personel monitoruje apetyt i zachowanie.',
+            'Zalecono kontrolę za tydzień oraz ograniczenie aktywności na wybiegu.',
+            'Wyniki badań w normie, zwierzę może wrócić do standardowej opieki.',
+            'Po podaniu leków stan się poprawił, kontynuujemy kurację zgodnie z zaleceniami.',
+            'Zabieg przebiegł prawidłowo, rana goi się zgodnie z planem leczenia.',
+            'Zalecono zmianę karmy i suplementację przez najbliższe 14 dni.',
+            'Pacjent spokojny po zabiegu, bez oznak bólu podczas ostatniej wizyty.',
+        ];
+
         foreach ($animals as $animal) {
             $numRecords = $faker->numberBetween(1, 4);
 
             for ($i = 0; $i < $numRecords; $i++) {
                 $type = $faker->randomElement(array_keys($treatments));
-                $descTemplate = $faker->randomElement($treatments[$type]);
+                $procedure = $faker->randomElement($treatments[$type]);
 
                 MedicalRecord::create([
                     'animal_id' => $animal->id,
                     'treatment_type' => $type,
-                    'description' => $descTemplate.' (Zabieg przeprowadzony w klinice weterynaryjnej, pacjent zniósł dobrze).',
+                    'description' => sprintf(
+                        '%s u %s — %s %s',
+                        $procedure,
+                        $animal->name,
+                        $faker->randomElement($outcomes),
+                        $faker->sentence(5)
+                    ),
                     'cost' => $faker->randomFloat(2, 20, 500),
                     'treatment_date' => $faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d H:i:s'),
                 ]);

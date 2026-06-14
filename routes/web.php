@@ -34,6 +34,9 @@ Route::get('/kontakt', function () {
     return view('kontakt');
 });
 
+Route::get('/fundraisers', [FundraiserController::class, 'index'])->name('fundraisers.index');
+Route::get('/fundraisers/{fundraiser}', [FundraiserController::class, 'show'])->name('fundraisers.show');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -64,12 +67,14 @@ Route::middleware('auth')->group(function () {
     // Volunteer Tasks
     Route::middleware(['role:Admin,Weterynarz,Pracownik,Wolontariusz'])->group(function () {
         Route::get('/volunteer-tasks', [VolunteerTaskController::class, 'index'])->name('volunteer-tasks.index');
+        Route::get('/panel/zwierzeta', [AnimalCatalogController::class, 'panelIndex'])->name('panel.animals.index');
         Route::post('/volunteer-tasks', [VolunteerTaskController::class, 'store'])->name('volunteer-tasks.store');
         Route::patch('/volunteer-tasks/{task}', [VolunteerTaskController::class, 'update'])->name('volunteer-tasks.update');
         Route::delete('/volunteer-tasks/{task}', [VolunteerTaskController::class, 'destroy'])->name('volunteer-tasks.destroy');
     });
 
     Route::post('/animals/{animal}/like', [AnimalLikeController::class, 'toggle'])->name('animals.like');
+    Route::get('/polubione-zwierzeta', [AnimalLikeController::class, 'index'])->name('user.liked-animals.index');
 
     // Adoption Applications
     Route::post('/adoption-applications', [AdoptionApplicationController::class, 'store'])->name('adoption-applications.store');
@@ -77,20 +82,19 @@ Route::middleware('auth')->group(function () {
     // User specific routes for adoption applications
     Route::get('/moje-wnioski', [AdoptionApplicationController::class, 'myApplications'])->name('user.adoption-applications.index');
     Route::get('/moje-wnioski/{application}', [AdoptionApplicationController::class, 'showMyApplication'])->name('user.adoption-applications.show');
+    Route::delete('/moje-wnioski/{application}', [AdoptionApplicationController::class, 'destroy'])->name('user.adoption-applications.destroy');
 
     Route::middleware(['role:Admin,Pracownik'])->group(function () {
         Route::get('/admin/adoption-applications', [AdoptionApplicationController::class, 'index'])->name('admin.adoption-applications.index');
         Route::get('/admin/adoption-applications/{application}', [AdoptionApplicationController::class, 'show'])->name('admin.adoption-applications.show');
         Route::patch('/admin/adoption-applications/{application}', [AdoptionApplicationController::class, 'update'])->name('admin.adoption-applications.update');
 
-        // tutaj dla admina aby se klikał
         Route::get('/admin/fundraisers/create', [FundraiserController::class, 'create'])->name('admin.fundraisers.create');
         Route::post('/admin/fundraisers', [FundraiserController::class, 'store'])->name('admin.fundraisers.store');
+        Route::get('/admin/fundraisers/{fundraiser}/edit', [FundraiserController::class, 'edit'])->name('admin.fundraisers.edit');
+        Route::patch('/admin/fundraisers/{fundraiser}', [FundraiserController::class, 'update'])->name('admin.fundraisers.update');
+        Route::delete('/admin/fundraisers/{fundraiser}', [FundraiserController::class, 'destroy'])->name('admin.fundraisers.destroy');
     });
-
-    Route::get('/fundraisers', [FundraiserController::class, 'index'])->name('fundraisers.index');
-
-    Route::get('/fundraisers/{fundraiser}', [FundraiserController::class, 'show'])->name('fundraisers.show');
 
     Route::post('/donations', [DonationController::class, 'store'])->name('donation.store');
 });

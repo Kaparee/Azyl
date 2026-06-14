@@ -38,12 +38,7 @@
     </div>
 
     <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
-        {{-- Pole szukania jest na razie tylko wyglądem, filtrowanie będzie w późniejszym punkcie. --}}
-        <div class="flex items-center justify-between gap-3 mb-4">
-            <form action="{{ route('admin.animals.index') }}" method="GET" class="w-full max-w-sm">
-                <input type="text" name="search" value="{{ request('search') }}" class="w-full rounded-xl border-slate-200 text-sm" placeholder="Szukaj po imieniu, rasie, gatunku...">
-            </form>
-
+        <div class="flex items-center justify-end gap-3 mb-4">
             <div class="flex gap-2">
                 <a href="{{ route('admin.species.index') }}" class="px-3 py-2 rounded-lg bg-slate-100 text-sm">Gatunki</a>
                 <a href="{{ route('admin.breeds.index') }}" class="px-3 py-2 rounded-lg bg-slate-100 text-sm">Rasy</a>
