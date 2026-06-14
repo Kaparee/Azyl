@@ -14,7 +14,7 @@ class VolunteerTaskController extends Controller
         $userId = Auth::id();
         $userRole = Auth::user()->role_id;
 
-        if (in_array($userRole, [1, 2])) {
+        if (in_array($userRole, [1, 2, 3])) {
             $baseQuery = VolunteerTask::query();
         } else {
             $baseQuery = VolunteerTask::where('assigned_to', $userId);
@@ -37,7 +37,7 @@ class VolunteerTaskController extends Controller
         $allTasks = (clone $baseQuery)->get();
 
         $volunteers = [];
-        if (in_array($userRole, [1, 2])) {
+        if (in_array($userRole, [1, 2, 3])) {
             $volunteers = User::where('role_id', 4)->get();
         }
 

@@ -3,10 +3,16 @@
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="mb-8">
-                <span class="text-xs font-bold uppercase tracking-wider text-orange-600 block mb-1">Bądź na
-                    bieżąco</span>
-                <h1 class="text-3xl font-extrabold text-gray-900">Jak możesz pomóc?</h1>
+            <div class="mb-8 flex justify-between items-end">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-orange-600 block mb-1">Bądź na bieżąco</span>
+                    <h1 class="text-3xl font-extrabold text-gray-900">Jak możesz pomóc?</h1>
+                </div>
+                @if(auth()->check() && in_array(auth()->user()->role?->name, ['Admin', 'Pracownik']))
+                <a href="{{ route('admin.fundraisers.create') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold transition-colors shadow-sm">
+                    + Dodaj zbiórkę
+                </a>
+                @endif
             </div>
 
             @if ($fundraisers->isEmpty())

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AnimalController;
 use App\Http\Controllers\Admin\BreedController;
 use App\Http\Controllers\Admin\SpeciesController;
+use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\AdoptionApplicationController;
 use App\Http\Controllers\AnimalCatalogController;
 use App\Http\Controllers\AnimalLikeController;
@@ -83,6 +84,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/admin/adoption-applications/{application}', [AdoptionApplicationController::class, 'update'])->name('admin.adoption-applications.update');
 
         // tutaj dla admina aby se klikał
+        Route::get('/admin/fundraisers/create', [FundraiserController::class, 'create'])->name('admin.fundraisers.create');
         Route::post('/admin/fundraisers', [FundraiserController::class, 'store'])->name('admin.fundraisers.store');
     });
 
@@ -102,4 +104,5 @@ Route::middleware(['auth', 'role:Admin,Pracownik'])
         Route::resource('animals', AnimalController::class)->except(['show']);
         Route::resource('species', SpeciesController::class)->except(['show']);
         Route::resource('breeds', BreedController::class)->except(['show']);
+        Route::resource('news', NewsController::class);
     });

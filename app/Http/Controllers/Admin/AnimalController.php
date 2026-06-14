@@ -14,9 +14,21 @@ use Illuminate\Support\Str;
 class AnimalController extends Controller
 {
     // lista zwierząt w panelu admina razem z prostymi licznikami do kafelków
-    public function index()
+    public function index(Request $request)
     {
-        $animals = Animal::with(['breed.species', 'animalImages.image'])->paginate(10);
+        $query = Animal::with(['breed.species', 'animalImages.image']);
+
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('breed', function($q) use ($request) {
+                      $q->where('name', 'like', '%' . $request->search . '%')
+                        ->orWhereHas('species', function($q2) use ($request) {
+                            $q2->where('name', 'like', '%' . $request->search . '%');
+                        });
+                  });
+        }
+
+        $animals = $query->paginate(10)->withQueryString();
 
         return view('admin.animals.index', [
             'animals' => $animals,
@@ -123,6 +135,13 @@ class AnimalController extends Controller
         ]);
 
         unset($data['images'], $data['sort_order']);
+
+        if ($data['status'] != $animal->status->value) {
+            $pendingApplicationsCount = $animal->adoptionApplications()->where('status', \App\Enums\AdoptionStatus::PENDING)->count();
+            if ($pendingApplicationsCount > 0 && $data['status'] == \App\Enums\AnimalStatus::AVAILABLE->value) {
+                return redirect()->back()->withErrors(['status' => 'Nie można zmienić na Dostępne - zwierzę ma oczekujące wnioski o adopcję.']);
+            }
+        }
 
         $animal->update($data);
 

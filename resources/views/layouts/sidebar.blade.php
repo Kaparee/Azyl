@@ -59,6 +59,12 @@
             </x-sidebar-link>
             @endif
 
+            @if(in_array($role, ['Admin', 'Pracownik']))
+            <x-sidebar-link href="{{ route('admin.news.index') }}" :active="request()->routeIs('admin.news.*')" icon="annotation">
+                Aktualności
+            </x-sidebar-link>
+            @endif
+
             <div class="pt-6 mt-6 border-t border-gray-800 space-y-1">
                 <x-sidebar-link href="{{ url('/') }}" :active="false" icon="external-link">
                     Strona główna
