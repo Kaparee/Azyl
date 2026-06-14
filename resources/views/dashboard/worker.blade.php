@@ -38,7 +38,7 @@
                     <p class="text-gray-500 font-medium text-lg">Zwierząt pod opieką w schronisku</p>
                 </div>
                 
-                <a href="{{ url('/') }}" class="mt-8 flex items-center justify-center gap-2 w-full bg-gray-50 hover:bg-blue-600 text-gray-700 hover:text-white px-6 py-4 rounded-xl text-base font-bold transition-colors duration-300">
+                <a href="{{ route('admin.animals.index') }}" class="mt-8 flex items-center justify-center gap-2 w-full bg-gray-50 hover:bg-blue-600 text-gray-700 hover:text-white px-6 py-4 rounded-xl text-base font-bold transition-colors duration-300">
                     Otwórz katalog zwierząt
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>

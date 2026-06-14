@@ -35,6 +35,8 @@ class AdoptionApplicationController extends Controller
             'message' => $request->message,
         ]);
 
+        $application->animal->update(['status' => AnimalStatus::PENDING]);
+
         return redirect()->back()->with('success', 'Wniosek o adopcję został złożony pomyślnie.');
     }
 
@@ -73,6 +75,14 @@ class AdoptionApplicationController extends Controller
                     ->where('id', '!=', $application->id)
                     ->where('status', AdoptionStatus::PENDING)
                     ->update(['status' => AdoptionStatus::CANCELLED]);
+            } else {
+                $pendingCount = AdoptionApplication::where('animal_id', $application->animal_id)
+                    ->where('status', AdoptionStatus::PENDING)
+                    ->count();
+                
+                if ($pendingCount === 0 && $application->animal->status === AnimalStatus::PENDING) {
+                    $application->animal->update(['status' => AnimalStatus::AVAILABLE]);
+                }
             }
         });
 
