@@ -67,7 +67,7 @@
                     <p class="text-orange-100 font-medium text-lg">Oczekujących wniosków adopcyjnych</p>
                 </div>
                 
-                <a href="{{ route('adoption.index') }}" class="relative z-10 mt-8 flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white text-white hover:text-[#FF6B35] px-6 py-4 rounded-xl text-base font-bold transition-all duration-300 backdrop-blur-sm border border-white/20">
+                <a href="{{ route('admin.adoption-applications.index') }}" class="relative z-10 mt-8 flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white text-white hover:text-[#FF6B35] px-6 py-4 rounded-xl text-base font-bold transition-all duration-300 backdrop-blur-sm border border-white/20">
                     Przejdź do weryfikacji
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </a>
