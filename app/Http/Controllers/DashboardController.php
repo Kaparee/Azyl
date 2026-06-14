@@ -79,6 +79,16 @@ class DashboardController extends Controller
 
         $urgentTasks = VolunteerTask::where('status', 1)->orderBy('time')->take(4)->get();
 
+        $workerTasks = VolunteerTask::with('assignedUser')
+            ->whereHas('assignedUser', function($q) {
+                $q->where('role_id', 3); // Pracownik
+            })
+            ->where('status', '!=', 3) // nie ukończone
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'asc')
+            ->take(10)
+            ->get();
+
         $last12Months = collect(range(11, 0))->map(function ($i) {
             return Carbon::now()->subMonths($i);
         });
@@ -114,6 +124,7 @@ class DashboardController extends Controller
             'speciesLabels',
             'speciesData',
             'urgentTasks',
+            'workerTasks',
             'months',
             'monthlyAdoptions'
         ));

@@ -6,6 +6,7 @@
     @php
         $recentAnimals = \App\Models\Animal::with('breed.species')->where('status', 1)->latest()->take(4)->get();
         $recentFundraisers = \App\Models\Fundraiser::where('status', 1)->latest()->take(2)->get();
+        $recentNews = \App\Models\News::where('is_published', true)->latest('published_at')->take(1)->get();
     @endphp
     <div class="relative bg-gray-900 min-h-[600px] flex flex-col justify-center items-center text-center">
         <div class="absolute inset-0 z-0">
@@ -193,20 +194,28 @@
                 </div>
             </div>
             @endforeach
+            @foreach($recentNews as $news)
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition">
                 <div class="h-48 bg-gray-200">
-                    <img src="{{ asset('images/hero_shelter.png') }}" class="w-full h-full object-cover">
+                    @if($news->image)
+                        <img src="{{ asset('storage/' . $news->image) }}" class="w-full h-full object-cover">
+                    @else
+                        <img src="{{ asset('images/hero_shelter.png') }}" class="w-full h-full object-cover">
+                    @endif
                 </div>
                 <div class="p-5 flex flex-col flex-grow">
-                    <h3 class="font-bold text-gray-900 text-lg mb-3">Dzień Otwarty Schroniska – zapraszamy w niedzielę!</h3>
+                    <p class="text-xs text-orange-500 font-bold mb-2">{{ $news->published_at->format('d.m.Y') }}</p>
+                    <h3 class="font-bold text-gray-900 text-lg mb-3">{{ $news->title }}</h3>
+                    <p class="text-sm text-gray-600 line-clamp-3 mb-4">{{ Str::limit(strip_tags($news->content), 100) }}</p>
                     
                     <div class="mt-auto pt-4 border-t border-gray-50">
-                        <a href="#" class="text-azyl-orange font-medium hover:underline text-sm inline-flex items-center">
-                            Dowiedz się więcej <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        </a>
+                        <span class="text-azyl-orange font-medium hover:underline text-sm inline-flex items-center cursor-pointer">
+                            Czytaj więcej <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </span>
                     </div>
                 </div>
             </div>
+            @endforeach
         </div>
     </div>
     <div class="bg-azyl-orange py-12">

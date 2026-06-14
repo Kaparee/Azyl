@@ -6,7 +6,7 @@
                 <h2 class="text-2xl font-bold text-gray-900">Zadania wolontariuszy</h2>
                 <p class="text-sm text-gray-500">Dzisiaj, {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
             </div>
-            @if(in_array(Auth::user()->role_id, [1, 2]))
+            @if(in_array(Auth::user()->role_id, [1, 2, 3]))
             <button @click="showTaskModal = true" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Zleć zadanie
@@ -153,7 +153,7 @@
 
                     </div>
                     @endif
-                    @if(in_array(Auth::user()->role_id, [1, 2]))
+                    @if(in_array(Auth::user()->role_id, [1, 2, 3]))
                     <div class="flex items-center gap-2 pt-3 border-t border-gray-100 mt-3">
                         <button @click="selectedTask = {{ $task }}; showEditModal = true" class="text-orange-500 hover:text-orange-700 text-xs font-medium">Edytuj zadanie</button>
                         <button @click="selectedTask = {{ $task }}; showDeleteModal = true" class="text-red-500 hover:text-red-700 text-xs font-medium">Usuń zadanie</button>
@@ -176,7 +176,7 @@
             {{ $tasks->links() }}
         </div>
 
-        @if(in_array(Auth::user()->role_id, [1, 2]))
+        @if(in_array(Auth::user()->role_id, [1, 2, 3]))
         <!-- Modal: Dodaj Zadanie -->
         <div x-show="showTaskModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div @click.away="showTaskModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">

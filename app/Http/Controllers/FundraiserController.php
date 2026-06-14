@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreFundraiserRequest;
 use App\Models\Fundraiser;
+use App\Models\Animal;
 use Illuminate\Support\Str;
 
 // Controller, ktory zarzadza wyswietlaniem - w skrocie
@@ -24,6 +25,12 @@ class FundraiserController extends Controller
     }
 
     // Towrzenie
+    public function create()
+    {
+        $animals = Animal::where('status', 0)->get();
+        return view('fundraisers.create', compact('animals'));
+    }
+
     public function store(StoreFundraiserRequest $request)
     {
         // petla ktora sprawdza czy dany qrkod juz nie jest w bazie, generuje dopoki nie bedzie unikalny, taki o smaczek
@@ -43,18 +50,18 @@ class FundraiserController extends Controller
             'end_date' => $request->end_date,
         ]);
 
-        // Tak jak wczesniej papka dla przegladarki z kodem 201
-        return response()->json([
-            'message' => 'Zbiórka została utworzona pomyślnie',
-            'fundraiser' => $fundraiser,
-        ], 201);
+        // Przekierowanie do listy zbiórek po utworzeniu
+        return redirect()->route('fundraisers.index')
+            ->with('success', 'Zbiórka została utworzona pomyślnie');
     }
 
     // Pojedyncz zbiorka w sumie
     public function show(Fundraiser $fundraiser)
     {
         // Sciaganie Eager
-        $fundraiser->load(['animal', 'donations.user']);
+        $fundraiser->load(['animal', 'donations' => function($q) {
+            $q->latest()->take(5)->with('user');
+        }]);
 
         // compact to jak prasa hydrauliczna, bierze se obiekt i se go wrzuca do widoku
         return view('fundraisers.show', compact('fundraiser'));
