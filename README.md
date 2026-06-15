@@ -1,66 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Dokumentacja Techniczna – Azyl
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 1. Wstęp
+### 1.1 Przeznaczenie aplikacji
+"Azyl" to kompleksowy system klasy CMS/ERP wspierający codzienne funkcjonowanie schronisk dla zwierząt. Aplikacja ma na celu cyfryzację zasobów placówki, automatyzację obiegu wniosków adopcyjnych oraz zarządzanie zbiórkami celowymi. System integruje zarządzanie bazą zwierząt z modułami logistycznymi (wolontariat, dokumentacja medyczna) i finansowymi (fundraising), kładąc nacisk na przejrzystość procesów.
 
-## About Laravel
+### 1.2 Użyte technologie
+- **Język i Framework:** PHP 8.2, Laravel 11
+- **Baza danych:** MySQL (uruchamiana za pomocą Docker / Laravel Sail)
+- **Frontend / UI:** Tailwind CSS, Blade Templates, Alpine.js
+- **Autoryzacja:** Laravel Breeze (architektura MVC, Middleware)
+- **Wykresy i planowanie:** Chart.js, FullCalendar.js
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 2. Autorzy i podział ról
+Projekt został zrealizowany przez zespół 3-osobowy. Role i odpowiedzialności podzielono następująco:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Jakub Płocica (Infrastruktura, Analityka i Logistyka)**
+  - Architektura bazy danych i precyzyjne mapowanie relacji kaskadowych (ON DELETE CASCADE).
+  - Wdrożenie systemu autoryzacji (Laravel Breeze) i Middleware dla różnych ról.
+  - Moduł medyczny, system zadań wolontariatu oraz Dashboard administratora ze statystykami.
+- **Kacper Ręczak (Logika Biznesowa i Finanse)**
+  - Procesor adopcyjny: logika walidacji wniosków i automatyczna zmiana statusów po adopcji.
+  - System fundraisingowy: tworzenie zbiórek przypisanych do zwierząt.
+  - UI Biznesowe: widok zbiórek z paskami postępu oraz panel historii operacji.
+- **Kamil Szopniewski (Multimedia i Katalog)**
+  - Pełny CRUD dla zwierząt oraz słowników (rasy, gatunki).
+  - Moduł asynchronicznego uploadu wielu zdjęć i generowania unikalnych tokenów QR.
+  - System interakcji (polubienia, licznik odwiedzin profilu).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 3. Opis funkcjonalności
 
-## Learning Laravel
+1. **Inteligentny Katalog z kodami QR**
+   Przeglądarka zintegrowana z generatorami kodów QR. Fizyczne zeskanowanie kodu np. na klatce zwierzaka prowadzi bezpośrednio do jego profilu w aplikacji.
+2. **Procesor Adopcyjny**
+   Zautomatyzowany obieg wniosków adopcyjnych. Użytkownik wysyła zgłoszenie, system sprawdza duplikaty, a decyzja Administratora automatycznie modyfikuje dostępność zwierzaka w katalogu.
+3. **Engine Finansowy (Zbiórki celowe)**
+   Administratorzy mogą zakładać zbiórki na konkretne cele medyczne lub bytowe wybranych zwierząt. Paski postępu wypełniają się w czasie rzeczywistym. Darowizny mogą być anonimowe.
+4. **Elektroniczna Kartoteka Medyczna**
+   Moduł dedykowany Weterynarzom – rejestracja historii leczenia, szczepień i poniesionych na ten cel kosztów.
+5. **System zadań (Wolontariat)**
+   Pracownicy mogą przydzielać zadania wybranym wolontariuszom (np. wyprowadzenie psa o danej godzinie). Wolontariusze mogą oznaczać zadania jako ukończone.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 4. Schemat Bazy Danych (ERD)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Poniżej znajduje się zrzut ekranu ze schematem bazy danych (ERD):
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+`[TUTAJ WSTAW SCREENSHOT: Schemat Bazy Danych ERD (z dbdiagram.io, DataGrip lub MySQL Workbench)]`
 
-## Laravel Sponsors
+## 5. Przebieg logiki biznesowej (Cykl życia adopcji i zbiórek)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+*W tej sekcji przedstawiono flagowy przypadek użycia systemu, od momentu dodania zwierzęcia, przez proces wpłat, aż do udanej adopcji.*
 
-### Premium Partners
+1. **Rejestracja i logowanie (Moduł Kuby):**
+   Użytkownik wypełnia formularz i zostaje zautoryzowany z rolą `Adopter`. Od tego momentu ma dostęp do własnego panelu historii wniosków.
+   
+   ![Widok rejestracji/logowania (Laravel Breeze)](docs/screenshot_2_register.png)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+2. **Katalogowanie i media (Moduł Kamila):**
+   Pracownik schroniska dodaje nowe zwierzę do bazy (np. pies Burek, rasa Mieszaniec). Wgrywa 3 zdjęcia. System generuje w tle unikalny `qr_token` i zapisuje go w bazie, przypisując kod kreskowy/QR dla Burka.
+   
+   ![Panel Pracownika - formularz dodawania zwierzęcia](docs/screenshot_3_worker_animal_form.png)
+   
+   ![Karta psa w publicznym katalogu z widocznym kodem QR](docs/screenshot_4_animal_card.png)
 
-## Contributing
+3. **Tworzenie zbiórki celowej (Moduł Kacpra):**
+   Pies Burek wymaga drogiej operacji. Pracownik wchodzi w moduł zbiórek i zakłada zbiórkę na kwotę 2000 zł powiązaną z Burkiem.
+   
+   ![Formularz tworzenia zbiórki w panelu Pracownika](docs/screenshot_5_worker_fundraiser_form.png)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Finansowanie zbiórki (Moduł Kacpra):**
+   Użytkownicy wchodzą na profil zbiórki i dokonują darowizn. System atomowo aktualizuje `collected_amount`. Pasek postępu dynamicznie się wypełnia.
+   
+   ![Publiczny profil zbiórki pokazujący pasek postępu i listę najnowszych wpłat](docs/screenshot_6_fundraiser_profile.png)
 
-## Code of Conduct
+5. **Wniosek Adopcyjny (Moduł Kacpra):**
+   Pies Burek zdrowieje, a Użytkownik wysyła wniosek o adopcję. System waliduje wniosek (brak duplikatów).
+   
+   ![Panel użytkownika - zakładka "Moje Wnioski"](docs/screenshot_7_user_applications.png)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+6. **Akceptacja i zmiana statusu (Moduł Kacpra):**
+   Administrator w swoim panelu przegląda wniosek. Klika "Akceptuj". Status psa Burek automatycznie zmienia się na "ADOPTOWANY", co powoduje, że zwierzę ukrywa się w katalogu zwierząt dostępnych do adopcji.
+   
+   ![Panel Administratora - Zarządzanie Wnioskami Adopcyjnymi](docs/screenshot_8_admin_applications.png)
 
-## Security Vulnerabilities
+7. **Zlecenie zadania Wolontariuszowi (Moduł Kuby):**
+   Po udanej adopcji pracownik zleca wolontariuszowi zadanie "Przygotowanie psa Burka do wydania" na konkretny termin. Wolontariusz widzi to u siebie na liście i oznacza po wykonaniu.
+   
+   ![Panel Wolontariusza - Lista Zadań](docs/screenshot_9_volunteer_tasks.png)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-## License
+## 6. Instrukcja uruchomienia (Krok po kroku)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Aplikacja "Azyl" wykorzystuje wbudowane mechanizmy Docker-a (Laravel Sail) dla najwyższej spójności środowiska deweloperskiego.
+
+**Wymagania:**
+- Docker Desktop i WSL2 (na systemie Windows)
+- PHP / Composer zainstalowany globalnie (opcjonalnie do pobrania vendorów)
+
+**Kroki uruchomienia:**
+1. Sklonuj repozytorium z kodem źródłowym:
+   ```bash
+   git clone <adres_repozytorium>
+   cd Azyl
+   ```
+2. Zainstaluj zależności kompozytora:
+   ```bash
+   docker run --rm \
+     -u "$(id -u):$(id -g)" \
+     -v "$(pwd):/var/www/html" \
+     -w /var/www/html \
+     laravelsail/php82-composer:latest \
+     composer install --ignore-platform-reqs
+   ```
+3. Skopiuj plik środowiskowy i wygeneruj klucz aplikacji:
+   ```bash
+   cp .env.example .env
+   ./vendor/bin/sail php artisan key:generate
+   ```
+4. Uruchom maszyny Dockerowe w tle:
+   ```bash
+   ./vendor/bin/sail up -d
+   ```
+5. Przebuduj bazę danych i wgraj dane testowe (seedery):
+   ```bash
+   ./vendor/bin/sail artisan migrate:fresh --seed
+   ```
+6. Zbuduj i połącz symlinki do pamięci masowej (dla zdjęć):
+   ```bash
+   ./vendor/bin/sail artisan storage:link
+   ```
+7. Uruchom serwer developerski dla assetów frontendowych (Vite):
+   ```bash
+   ./vendor/bin/sail npm install
+   ./vendor/bin/sail npm run dev
+   ```
+Gotowe! Aplikacja jest dostępna pod adresem: `http://localhost`.
+
+## 7. Kierunki dalszego rozwoju
+* **Wirtualne Adopcje:** Moduł dedykowany stałym donatorom z opcją subskrypcji miesięcznych wsparć za pomocą zewnętrznych bramek płatności (np. Stripe/Przelewy24).
+* **Integracja z kalendarzem Google:** Możliwość eksportowania wizyt weterynaryjnych oraz zadań wolontariatu do zewnetrznych aplikacji.
+* **Rozbudowa modułu medycznego:** Generowanie raportów PDF dla historii leczenia poszczególnych zwierząt oraz magazyn leków (śledzenie stanów magazynowych schroniska).
+* **Powiadomienia w czasie rzeczywistym:** Wdrożenie technologii WebSocket (np. Laravel Reverb lub Pusher) w celu natychmiastowego powiadamiania administratorów o nowym wniosku.
