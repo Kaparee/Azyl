@@ -1,142 +1,305 @@
-# Dokumentacja Techniczna – Azyl
+# Azyl — system zarządzania schroniskiem
 
-## 1. Wstęp
-### 1.1 Przeznaczenie aplikacji
-"Azyl" to kompleksowy system klasy CMS/ERP wspierający codzienne funkcjonowanie schronisk dla zwierząt. Aplikacja ma na celu cyfryzację zasobów placówki, automatyzację obiegu wniosków adopcyjnych oraz zarządzanie zbiórkami celowymi. System integruje zarządzanie bazą zwierząt z modułami logistycznymi (wolontariat, dokumentacja medyczna) i finansowymi (fundraising), kładąc nacisk na przejrzystość procesów.
+Webowa aplikacja CMS/ERP dla schronisk: katalog zwierząt, adopcje, zbiórki, kartoteki medyczne i wolontariat.
 
-### 1.2 Użyte technologie
-- **Język i Framework:** PHP 8.5, Laravel 13
-- **Baza danych:** MySQL (uruchamiana za pomocą Docker / Laravel Sail)
-- **Frontend / UI:** Tailwind CSS, Blade Templates, Alpine.js
-- **Autoryzacja:** Laravel Breeze (architektura MVC, Middleware)
-- **Wykresy i planowanie:** Chart.js, FullCalendar.js
+---
 
-## 2. Autorzy i podział ról
-Projekt został zrealizowany przez zespół 3-osobowy. Role i odpowiedzialności podzielono następująco:
+## 1. Autorzy, podział ról
 
-- **Jakub Płocica (Infrastruktura, Analityka i Logistyka)**
-  - Architektura bazy danych i precyzyjne mapowanie relacji kaskadowych (ON DELETE CASCADE).
-  - Wdrożenie systemu autoryzacji (Laravel Breeze) i Middleware dla różnych ról.
-  - Moduł medyczny, system zadań wolontariatu oraz Dashboard administratora ze statystykami.
-- **Kacper Ręczak (Logika Biznesowa i Finanse)**
-  - Procesor adopcyjny: logika walidacji wniosków i automatyczna zmiana statusów po adopcji.
-  - System fundraisingowy: tworzenie zbiórek przypisanych do zwierząt.
-  - UI Biznesowe: widok zbiórek z paskami postępu oraz panel historii operacji.
-- **Kamil Szopniewski (Multimedia i Katalog)**
-  - Pełny CRUD dla zwierząt oraz słowników (rasy, gatunki).
-  - Moduł asynchronicznego uploadu wielu zdjęć i generowania unikalnych tokenów QR.
-  - System interakcji (polubienia, licznik odwiedzin profilu).
+| Osoba | Zakres odpowiedzialności |
+|-------|--------------------------|
+| **Jakub Płocica** | Infrastruktura, auth, medyczne, wolontariat, dashboard admin |
+| **Kacper Ręczak** | Adopcje, fundraising, finanse |
+| **Kamil Szopniewski** | CRUD zwierząt, zdjęcia, QR, polubienia |
 
-## 3. Opis funkcjonalności
+---
 
-1. **Inteligentny Katalog z kodami QR**
-   Przeglądarka zintegrowana z generatorami kodów QR. Fizyczne zeskanowanie kodu np. na klatce zwierzaka prowadzi bezpośrednio do jego profilu w aplikacji.
-2. **Procesor Adopcyjny**
-   Zautomatyzowany obieg wniosków adopcyjnych. Użytkownik wysyła zgłoszenie, system sprawdza duplikaty, a decyzja Administratora automatycznie modyfikuje dostępność zwierzaka w katalogu.
-3. **Engine Finansowy (Zbiórki celowe)**
-   Administratorzy mogą zakładać zbiórki na konkretne cele medyczne lub bytowe wybranych zwierząt. Paski postępu wypełniają się w czasie rzeczywistym. Darowizny mogą być anonimowe.
-4. **Elektroniczna Kartoteka Medyczna**
-   Moduł dedykowany Weterynarzom – rejestracja historii leczenia, szczepień i poniesionych na ten cel kosztów.
-5. **System zadań (Wolontariat)**
-   Pracownicy mogą przydzielać zadania wybranym wolontariuszom (np. wyprowadzenie psa o danej godzinie). Wolontariusze mogą oznaczać zadania jako ukończone.
+## 2. Użyte technologie
 
-## 4. Schemat Bazy Danych (ERD)
+| Warstwa | Stack |
+|---------|-------|
+| Backend | PHP 8.5 (kontener Sail), Laravel 13, MySQL 8.4 |
+| Frontend | Blade, Tailwind CSS, Alpine.js, Vite |
+| Auth | Laravel Breeze, middleware ról |
+| DevOps | Laravel Sail (Docker), Mailpit, phpMyAdmin |
+| Biblioteki | Chart.js (dashboard), DomPDF, Laravel Sanctum, L5-Swagger |
 
-Poniżej znajduje się zrzut ekranu ze schematem bazy danych (ERD):
+---
 
-`[TUTAJ WSTAW SCREENSHOT: Schemat Bazy Danych ERD (z dbdiagram.io, DataGrip lub MySQL Workbench)]`
+## 3. Przeznaczenie aplikacji
 
-## 5. Przebieg logiki biznesowej (Cykl życia adopcji i zbiórek)
+**Azyl** cyfryzuje codzienną pracę schroniska: centralny katalog zwierząt z kodami QR, obieg wniosków adopcyjnych, zbiórki celowe i rejestr darowizn, kartoteki medyczne oraz planowanie zadań wolontariuszy. System łączy moduły operacyjne, finansowe i medyczne w jednym panelu z rozróżnieniem ról (Admin, Pracownik, Weterynarz, Wolontariusz, Adoptujący).
 
-*W tej sekcji przedstawiono flagowy przypadek użycia systemu, od momentu dodania zwierzęcia, przez proces wpłat, aż do udanej adopcji.*
+---
 
-1. **Rejestracja i logowanie (Moduł Kuby):**
-   Użytkownik wypełnia formularz i zostaje zautoryzowany z rolą `Adopter`. Od tego momentu ma dostęp do własnego panelu historii wniosków.
-   
-   ![Widok rejestracji/logowania (Laravel Breeze)](docs/screenshot_2_register.png)
+## 4. Opis funkcjonalności
 
-2. **Katalogowanie i media (Moduł Kamila):**
-   Pracownik schroniska dodaje nowe zwierzę do bazy (np. pies Burek, rasa Mieszaniec). Wgrywa 3 zdjęcia. System generuje w tle unikalny `qr_token` i zapisuje go w bazie, przypisując kod kreskowy/QR dla Burka.
-   
-   ![Panel Pracownika - formularz dodawania zwierzęcia](docs/screenshot_3_worker_animal_form.png)
-   
-   ![Karta psa w publicznym katalogu z widocznym kodem QR](docs/screenshot_4_animal_card.png)
+- **Katalog zwierząt** — CRUD, filtry, profile publiczne, kody QR (`qr_token`), licznik odwiedzin (`animal_clicks`), polubienia.
+- **Multimedia** — upload wielu zdjęć, tabela pośrednia `animal_images`, sortowanie.
+- **Adopcje** — składanie wniosków, walidacja duplikatów, synchronizacja statusu zwierzęcia (dostępny → w trakcie → adoptowany).
+- **Fundraising** — zbiórki przypisane do zwierząt, darowizny (także anonimowe), pasek postępu `collected_amount` / `target_amount`.
+- **Medycyna** — historia leczenia, koszty, typy zabiegów (rola Weterynarz).
+- **Wolontariat** — zadania z terminem, przypisanie użytkownika, status i flaga pilności.
+- **Panel admina** — statystyki adopcji i gatunków (Chart.js), zarządzanie wnioskami, aktualności (`news`).
+- **API** — dokumentacja Swagger (Sanctum).
 
-3. **Tworzenie zbiórki celowej (Moduł Kacpra):**
-   Pies Burek wymaga drogiej operacji. Pracownik wchodzi w moduł zbiórek i zakłada zbiórkę na kwotę 2000 zł powiązaną z Burkiem.
-   
-   ![Formularz tworzenia zbiórki w panelu Pracownika](docs/screenshot_5_worker_fundraiser_form.png)
+---
 
-4. **Finansowanie zbiórki (Moduł Kacpra):**
-   Użytkownicy wchodzą na profil zbiórki i dokonują darowizn. System atomowo aktualizuje `collected_amount`. Pasek postępu dynamicznie się wypełnia.
-   
-   ![Publiczny profil zbiórki pokazujący pasek postępu i listę najnowszych wpłat](docs/screenshot_6_fundraiser_profile.png)
+## 5. Schemat ERD
 
-5. **Wniosek Adopcyjny (Moduł Kacpra):**
-   Pies Burek zdrowieje, a Użytkownik wysyła wniosek o adopcję. System waliduje wniosek (brak duplikatów).
-   
-   ![Panel użytkownika - zakładka "Moje Wnioski"](docs/screenshot_7_user_applications.png)
+Diagram DBML (wklej na [dbdiagram.io](https://dbdiagram.io)):
 
-6. **Akceptacja i zmiana statusu (Moduł Kacpra):**
-   Administrator w swoim panelu przegląda wniosek. Klika "Akceptuj". Status psa Burek automatycznie zmienia się na "ADOPTOWANY", co powoduje, że zwierzę ukrywa się w katalogu zwierząt dostępnych do adopcji.
-   
-   ![Panel Administratora - Zarządzanie Wnioskami Adopcyjnymi](docs/screenshot_8_admin_applications.png)
+```dbml
+Table roles {
+  id bigint [pk, increment]
+  name varchar [unique]
+  description varchar [null]
+  created_at timestamp
+  updated_at timestamp
+}
 
-7. **Zlecenie zadania Wolontariuszowi (Moduł Kuby):**
-   Po udanej adopcji pracownik zleca wolontariuszowi zadanie "Przygotowanie psa Burka do wydania" na konkretny termin. Wolontariusz widzi to u siebie na liście i oznacza po wykonaniu.
-   
-   ![Panel Wolontariusza - Lista Zadań](docs/screenshot_9_volunteer_tasks.png)
+Table users {
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  email_verified_at timestamp [null]
+  password varchar
+  role_id bigint [ref: > roles.id]
+  remember_token varchar [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table species {
+  id bigint [pk, increment]
+  name varchar [unique]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table breeds {
+  id bigint [pk, increment]
+  name varchar
+  species_id bigint [ref: > species.id]
+  created_at timestamp
+  updated_at timestamp
+  indexes {
+    (name, species_id) [unique]
+  }
+}
+
+Table animals {
+  id bigint [pk, increment]
+  name varchar
+  breed_id bigint [ref: > breeds.id]
+  caregiver_id bigint [null, ref: > users.id]
+  age_months smallint
+  genders smallint
+  height int
+  color varchar
+  description text
+  medical_info text [null]
+  traits json [null]
+  housing_conditions varchar [null]
+  experience_required varchar [null]
+  daily_time_required varchar [null]
+  is_child_friendly boolean [default: false]
+  accepts_cats boolean [default: false]
+  accepts_dogs boolean [default: false]
+  requires_responsible_caregiver boolean [default: false]
+  contact_phone varchar [null]
+  visiting_hours varchar [null]
+  adoption_fee decimal(10,2) [default: 0]
+  status int
+  qr_token varchar [unique]
+  arrival_date timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table images {
+  id bigint [pk, increment]
+  animal_id bigint [ref: > animals.id]
+  file_name varchar
+  original_file_name varchar
+  file_type varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table animal_images {
+  id bigint [pk, increment]
+  animal_id bigint [ref: > animals.id]
+  image_id bigint [ref: > images.id]
+  sort_order int [default: 0]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table adoption_applications {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  animal_id bigint [ref: > animals.id]
+  status int
+  message text [null]
+  created_at timestamp
+  updated_at timestamp
+  indexes {
+    (user_id, animal_id) [unique]
+  }
+}
+
+Table animal_likes {
+  user_id bigint [ref: > users.id]
+  animal_id bigint [ref: > animals.id]
+  created_at timestamp
+  updated_at timestamp
+  indexes {
+    (user_id, animal_id) [pk]
+  }
+}
+
+Table animal_clicks {
+  id bigint [pk, increment]
+  animal_id bigint [ref: > animals.id]
+  clicked_at timestamp
+}
+
+Table fundraisers {
+  id bigint [pk, increment]
+  animal_id bigint [ref: > animals.id]
+  title varchar
+  description text
+  target_amount decimal(10,2)
+  collected_amount decimal(10,2) [default: 0]
+  qr_token varchar [unique]
+  status int
+  end_date timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table donations {
+  id bigint [pk, increment]
+  fundraiser_id bigint [ref: > fundraisers.id]
+  user_id bigint [null, ref: > users.id]
+  amount decimal(8,2)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table medical_records {
+  id bigint [pk, increment]
+  animal_id bigint [ref: > animals.id]
+  treatment_type varchar
+  description text
+  cost decimal(8,2) [default: 0]
+  treatment_date timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table volunteer_tasks {
+  id bigint [pk, increment]
+  title varchar
+  description text [null]
+  date timestamp
+  time time
+  status int
+  is_urgent boolean [default: false]
+  assigned_to bigint [null, ref: > users.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table news {
+  id bigint [pk, increment]
+  title varchar
+  content text
+  image varchar [null]
+  author_id bigint [ref: > users.id]
+  is_published boolean [default: false]
+  published_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+```
+
+Wizualizacja wygenerowana w projekcie:
+
+![Schemat ERD bazy danych](docs/baza.png)
+
+---
+
+## 6. Kierunki dalszego rozwoju
+
+**Przechowywanie zdjęć (Windows)** — pliki lądują w `storage/app/public/animals`; bez `php artisan storage:link` i poprawnych uprawnień WSL/Docker obrazy z seedera (`ImageAndLikeSeeder`) nie będą widoczne. Rozważyć S3/Cloudinary zamiast lokalnego dysku na produkcji.
+
+**Powiadomienia e-mail** — Mailpit jest w Sail, ale brak maili transakcyjnych (nowy wniosek, decyzja admina, darowizna). Kolejny krok: kolejki + szablony Mailable.
+
+**Płatności** — darowizny są symulowane; integracja Stripe / Przelewy24 i wirtualne adopcje (subskrypcje).
+
+**API i dokumentacja** — dokończyć konfigurację L5-Swagger i spójne endpointy REST pod Sanctum.
+
+**Raporty medyczne** — eksport PDF (DomPDF już w zależnościach), ewentualny magazyn leków.
+
+**Realtime** — WebSocket (Laravel Reverb) przy dużej liczbie równoległych wniosków lub zadań wolontariatu.
+
+**Testy** — pokrycie ścieżek krytycznych: adopcja w transakcji, aktualizacja `collected_amount`, unikalność wniosków.
+
+---
+
+## 7. Instrukcja krok po kroku uruchomienia
+
+### Wymagania
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (+ **WSL2** na Windows)
+- Git
+- Opcjonalnie: Composer lokalnie (można użyć obrazu Sail)
+
+> Kontener aplikacji działa na **PHP 8.5** (`compose.yaml` → `docker/8.5`). Wymaganie projektu: PHP **8.4+**.
+
+### Windows — uwagi
+
+- Uruchamiaj komendy w terminalu WSL2 lub Git Bash; unikaj mieszania ścieżek `C:\` z `/var/www/html`.
+- Po `migrate:fresh --seed` koniecznie wykonaj `storage:link` — inaczej zdjęcia zwierząt nie wyświetlą się w przeglądarce.
+- `ImageAndLikeSeeder` kopiuje pliki z `public/images/seed/animals/` do `storage/app/public/animals/` — upewnij się, że katalog seed istnieje w repozytorium.
+
+### Kroki
+
+```bash
+git clone <adres_repozytorium>
+cd Azyl
+docker compose up -d
+```
 
 
-## 6. Instrukcja uruchomienia (Krok po kroku)
+**7. Aplikacja:** [http://localhost](http://localhost)
 
-Aplikacja "Azyl" wykorzystuje wbudowane mechanizmy Docker-a (Laravel Sail) dla najwyższej spójności środowiska deweloperskiego.
+**Konta testowe** (hasło: `password`): `admin@azyl.pl`, `pracownik@azyl.pl`, `weterynarz@azyl.pl`, `wolontariusz@azyl.pl`, `adoptujacy@azyl.pl`
 
-**Wymagania:**
-- Docker Desktop i WSL2 (na systemie Windows)
-- PHP / Composer zainstalowany globalnie (opcjonalnie do pobrania vendorów)
+**Pomocnicze usługi Sail:** Mailpit `http://localhost:8025`, phpMyAdmin `http://localhost:8081`
 
-**Kroki uruchomienia:**
-1. Sklonuj repozytorium z kodem źródłowym:
-   ```bash
-   git clone <adres_repozytorium>
-   cd Azyl
-   ```
-2. Zainstaluj zależności kompozytora:
-   ```bash
-    docker run --rm \
-      -u "$(id -u):$(id -g)" \
-      -v "$(pwd):/var/www/html" \
-      -w /var/www/html \
-      laravelsail/php85-composer:latest \
-      composer install --ignore-platform-reqs
-   ```
-3. Skopiuj plik środowiskowy i wygeneruj klucz aplikacji:
-   ```bash
-   cp .env.example .env
-   ./vendor/bin/sail php artisan key:generate
-   ```
-4. Uruchom maszyny Dockerowe w tle:
-   ```bash
-   ./vendor/bin/sail up -d
-   ```
-5. Przebuduj bazę danych i wgraj dane testowe (seedery):
-   ```bash
-   ./vendor/bin/sail artisan migrate:fresh --seed
-   ```
-6. Zbuduj i połącz symlinki do pamięci masowej (dla zdjęć):
-   ```bash
-   ./vendor/bin/sail artisan storage:link
-   ```
-7. Uruchom serwer developerski dla assetów frontendowych (Vite):
-   ```bash
-   ./vendor/bin/sail npm install
-   ./vendor/bin/sail npm run dev
-   ```
-Gotowe! Aplikacja jest dostępna pod adresem: `http://localhost`.
+---
 
-## 7. Kierunki dalszego rozwoju
-* **Wirtualne Adopcje:** Moduł dedykowany stałym donatorom z opcją subskrypcji miesięcznych wsparć za pomocą zewnętrznych bramek płatności (np. Stripe/Przelewy24).
-* **Integracja z kalendarzem Google:** Możliwość eksportowania wizyt weterynaryjnych oraz zadań wolontariatu do zewnetrznych aplikacji.
-* **Rozbudowa modułu medycznego:** Generowanie raportów PDF dla historii leczenia poszczególnych zwierząt oraz magazyn leków (śledzenie stanów magazynowych schroniska).
-* **Powiadomienia w czasie rzeczywistym:** Wdrożenie technologii WebSocket (np. Laravel Reverb lub Pusher) w celu natychmiastowego powiadamiania administratorów o nowym wniosku.
+### Kroki w aplikacji
+
+1. **Rejestracja** — użytkownik otrzymuje rolę *Adoptujący* i dostęp do „Moje wnioski”.  
+   ![Rejestracja](docs/screenshot_2_register.png)
+
+2. **Katalogowanie** — pracownik dodaje zwierzę, wgrywa zdjęcia; system generuje `qr_token`.  
+   ![Formularz zwierzęcia](docs/screenshot_3_worker_animal_form.png)  
+   ![Karta z QR](docs/screenshot_4_animal_card.png)
+
+3. **Zbiórka (opcjonalnie)** — pracownik zakłada fundraiser na leczenie zwierzęcia; użytkownicy wpłacają darowizny.  
+   ![Formularz zbiórki](docs/screenshot_5_worker_fundraiser_form.png)  
+   ![Profil zbiórki](docs/screenshot_6_fundraiser_profile.png)
+
+4. **Wniosek** — adoptujący składa wniosek; unikalny constraint `(user_id, animal_id)` blokuje duplikat.  
+   ![Moje wnioski](docs/screenshot_7_user_applications.png)
+
+5. **Decyzja admina** — akceptacja w transakcji DB zmienia status wniosku i zwierzęcia; odrzucenie przywraca dostępność, gdy nie ma innych oczekujących wniosków.  
+   ![Panel wniosków](docs/screenshot_8_admin_applications.png)
+
+6. **Wolontariat (po adopcji)** — pracownik zleca zadanie (np. przygotowanie do wydania); wolontariusz oznacza wykonanie.  
+   ![Zadania wolontariusza](docs/screenshot_9_volunteer_tasks.png)
