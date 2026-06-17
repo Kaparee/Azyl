@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RespondsWithWebOrJson;
 use App\Http\Requests\StoreDonationRequest;
 use App\Models\Donation;
 use App\Models\Fundraiser;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class DonationController extends Controller
 {
+    use RespondsWithWebOrJson;
+
     public function store(StoreDonationRequest $request)
     {
         $userId = (Auth::check() && ! $request->has('anonymous')) ? Auth::id() : null;
@@ -28,6 +31,13 @@ class DonationController extends Controller
             return $newDonation;
         });
 
-        return redirect()->back()->with('success', 'Dziękujemy! Wpłata została zaksięgowana.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Dziękujemy! Wpłata została zaksięgowana.',
+            ['donation' => $donation],
+            201,
+            null,
+            'success',
+        );
     }
 }

@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RespondsWithWebOrJson;
 use App\Enums\AnimalStatus;
 use App\Http\Requests\StoreFundraiserRequest;
 use App\Models\Animal;
 use App\Models\Fundraiser;
+use App\Support\ValidationRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class FundraiserController extends Controller
 {
+    use RespondsWithWebOrJson;
+
     /**
      * Lista aktywnych zbiórek — dane do kafelków przygotowujemy tutaj, nie w Blade.
      */
@@ -69,8 +73,14 @@ class FundraiserController extends Controller
             'end_date' => $request->end_date,
         ]);
 
-        return redirect()->route('fundraisers.index')
-            ->with('success', 'Zbiórka została utworzona pomyślnie');
+        return $this->jsonOrRedirect(
+            $request,
+            'Zbiórka została utworzona pomyślnie',
+            ['fundraiser' => $fundraiser],
+            201,
+            route('fundraisers.index'),
+            'success',
+        );
     }
 
     /** Szczegóły zbiórki — procent i etykiety przygotowujemy tutaj, żeby widok był tylko prezentacją. */
@@ -114,13 +124,19 @@ class FundraiserController extends Controller
             'description' => 'required|string',
             'target_amount' => 'required|numeric|min:1',
             'animal_id' => 'nullable|exists:animals,id',
-            'end_date' => 'nullable|date',
+            'end_date' => ValidationRules::nullableTimestampDate(),
         ]);
 
         $fundraiser->update($validated);
 
-        return redirect()->route('fundraisers.show', $fundraiser)
-            ->with('success', 'Zbiórka została zaktualizowana pomyślnie');
+        return $this->jsonOrRedirect(
+            $request,
+            'Zbiórka została zaktualizowana pomyślnie',
+            ['fundraiser' => $fundraiser],
+            200,
+            route('fundraisers.show', $fundraiser),
+            'success'
+        );
     }
 
     /** Usuwamy całą zbiórkę — darowizny zostają w bazie przez relacje, ale nie są już widoczne publicznie. */
@@ -128,7 +144,13 @@ class FundraiserController extends Controller
     {
         $fundraiser->delete();
 
-        return redirect()->route('fundraisers.index')
-            ->with('success', 'Zbiórka została usunięta pomyślnie');
+        return $this->jsonOrRedirect(
+            request(),
+            'Zbiórka została usunięta pomyślnie',
+            [],
+            200,
+            route('fundraisers.index'),
+            'success'
+        );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RespondsWithWebOrJson;
 use App\Models\User;
 use App\Models\VolunteerTask;
 use App\Support\DatePresenter;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class VolunteerTaskController extends Controller
 {
+    use RespondsWithWebOrJson;
     /**
      * Lista zadań — admin/pracownik widzi wszystkie, wolontariusz tylko swoje przypisane.
      */
@@ -85,9 +87,16 @@ class VolunteerTaskController extends Controller
         $validated['date'] = now()->toDateString();
         $validated['is_urgent'] = $request->boolean('is_urgent');
 
-        VolunteerTask::create($validated);
+        $task = VolunteerTask::create($validated);
 
-        return back()->with('success', 'Zadanie zostało przypisane wolontariuszowi.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Zadanie zostało przypisane wolontariuszowi.',
+            ['task' => $task],
+            201,
+            null,
+            'success'
+        );
     }
 
     /**
@@ -106,9 +115,14 @@ class VolunteerTaskController extends Controller
             ]);
 
             $validated['is_urgent'] = $request->boolean('is_urgent');
-            $task->update($validated);
-
-            return back()->with('success', 'Zadanie zaktualizowano pomyślnie.');
+            return $this->jsonOrRedirect(
+                $request,
+                'Zadanie zaktualizowano pomyślnie.',
+                ['task' => $task],
+                200,
+                null,
+                'success'
+            );
         }
 
         $validated = $request->validate([
@@ -116,7 +130,14 @@ class VolunteerTaskController extends Controller
         ]);
         $task->update(['status' => $validated['status']]);
 
-        return back()->with('success', 'Zaktualizowano status zadania.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Zaktualizowano status zadania.',
+            ['task' => $task],
+            200,
+            null,
+            'success'
+        );
     }
 
     /** Usunięcie z listy — historia zadań nie jest archiwizowana, bo to panel operacyjny, nie raport. */
@@ -124,6 +145,13 @@ class VolunteerTaskController extends Controller
     {
         $task->delete();
 
-        return back()->with('success', 'Usunięto zadanie.');
+        return $this->jsonOrRedirect(
+            request(),
+            'Usunięto zadanie.',
+            [],
+            200,
+            null,
+            'success'
+        );
     }
 }

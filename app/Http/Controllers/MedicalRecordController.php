@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RespondsWithWebOrJson;
 use App\Models\Animal;
 use App\Models\MedicalRecord;
 use App\Support\DatePresenter;
+use App\Support\ValidationRules;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
 {
+    use RespondsWithWebOrJson;
     /**
      * Karta medyczna — filtrujemy po typie zabiegu, daty formatujemy w kontrolerze (MVC).
      */
@@ -56,12 +59,19 @@ class MedicalRecordController extends Controller
             'treatment_type' => 'required|string',
             'description' => 'required|string',
             'cost' => 'required|numeric',
-            'treatment_date' => 'required|date',
+            'treatment_date' => ValidationRules::requiredTimestampDate(),
         ]);
 
-        MedicalRecord::create($validated);
+        $record = MedicalRecord::create($validated);
 
-        return back()->with('success', 'Dodano nowy wpis medyczny.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Dodano nowy wpis medyczny.',
+            ['record' => $record],
+            201,
+            null,
+            'success'
+        );
     }
 
     /** Korekta wpisu z listy — walidacja tu, żeby błędne dane nie trafiły do historii leczenia. */
@@ -71,12 +81,19 @@ class MedicalRecordController extends Controller
             'treatment_type' => 'required|string',
             'description' => 'required|string',
             'cost' => 'required|numeric',
-            'treatment_date' => 'required|date',
+            'treatment_date' => ValidationRules::requiredTimestampDate(),
         ]);
 
         $record->update($validated);
 
-        return back()->with('success', 'Zaktualizowano wpis medyczny.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Zaktualizowano wpis medyczny.',
+            ['record' => $record],
+            200,
+            null,
+            'success'
+        );
     }
 
     /** Usuwamy tylko pojedynczy wpis — zwierzę zostaje, żeby nie gubić reszty karty medycznej. */
@@ -84,7 +101,14 @@ class MedicalRecordController extends Controller
     {
         $record->delete();
 
-        return back()->with('success', 'Usunięto wpis medyczny.');
+        return $this->jsonOrRedirect(
+            request(),
+            'Usunięto wpis medyczny.',
+            [],
+            200,
+            null,
+            'success'
+        );
     }
 
     /**

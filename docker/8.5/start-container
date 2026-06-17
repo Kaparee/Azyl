@@ -43,6 +43,50 @@ else
         fi
     }
 
+    # Ujednolicaj DB_* w .env z compose.yaml (mysql/root/azyl/puste hasło) przy każdym starcie
+    sync_docker_db_env() {
+        local env_file="/var/www/html/.env"
+        [ -f "$env_file" ] || return 0
+
+        local changed=0
+
+        sync_env_key() {
+            local key="$1"
+            local expected="$2"
+            local current
+
+            if grep -qE "^${key}=" "$env_file" 2>/dev/null; then
+                current=$(grep -E "^${key}=" "$env_file" | head -1 | cut -d '=' -f2- | sed 's/^["'\'']//;s/["'\'']$//' | tr -d '\r')
+                if [ "$current" != "$expected" ]; then
+                    if [ -z "$expected" ]; then
+                        sed -i "s/^${key}=.*/${key}=/" "$env_file"
+                    else
+                        sed -i "s/^${key}=.*/${key}=${expected}/" "$env_file"
+                    fi
+                    changed=1
+                fi
+            else
+                if [ -z "$expected" ]; then
+                    echo "${key}=" >> "$env_file"
+                else
+                    echo "${key}=${expected}" >> "$env_file"
+                fi
+                changed=1
+            fi
+        }
+
+        sync_env_key DB_HOST mysql
+        sync_env_key DB_DATABASE azyl
+        sync_env_key DB_USERNAME root
+        sync_env_key DB_PASSWORD ""
+
+        if [ "$changed" -eq 1 ]; then
+            echo "Zaktualizowano DB_* w .env do wartości Docker (compose.yaml)."
+        fi
+    }
+
+    sync_docker_db_env
+
     load_env_from_file DB_HOST mysql
     load_env_from_file DB_DATABASE azyl
     load_env_from_file DB_USERNAME root
@@ -66,8 +110,86 @@ else
         fi
     }
 
+    # Wolumen MySQL mógł zostać zainicjowany ze starymi Sail defaults (password/laravel)
+    prepare_mysql() {
+        if mysql_ping; then
+            return 0
+        fi
+
+        if mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -p"password" -e "SELECT 1" > /dev/null 2>&1; then
+            echo "Wykryto legacy MySQL (root/password) — dostosowuję do compose.yaml..."
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -p"password" <<-EOSQL
+                CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;
+                ALTER USER 'root'@'%' IDENTIFIED BY '';
+                ALTER USER 'root'@'localhost' IDENTIFIED BY '';
+                FLUSH PRIVILEGES;
+EOSQL
+        fi
+
+        if [ -z "${DB_PASSWORD}" ]; then
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -e "CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;" > /dev/null 2>&1 || true
+        else
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -p"${DB_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\`;" > /dev/null 2>&1 || true
+        fi
+    }
+
+    prepare_mysql
+
+    mysql_query() {
+        local query="$1"
+        if [ -z "${DB_PASSWORD}" ]; then
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -N -se "$query" "${DB_DATABASE}" 2>/dev/null
+        else
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -p"${DB_PASSWORD}" -N -se "$query" "${DB_DATABASE}" 2>/dev/null
+        fi
+    }
+
+    # Marker w storage/ przeżywa docker compose down -v (wolumen MySQL jest usuwany osobno)
+    database_needs_seed() {
+        if [ ! -f "$SETUP_MARKER" ]; then
+            return 0
+        fi
+        local count
+        count=$(mysql_query "SELECT COUNT(*) FROM animals")
+        if [ -z "$count" ]; then
+            return 0
+        fi
+        [ "$count" -eq 0 ]
+    }
+
+    ensure_database() {
+        [ -f "$VENDOR_FILE" ] || return 0
+
+        if ! mysql_ping; then
+            return 0
+        fi
+
+        cd /var/www/html
+
+        if database_needs_seed; then
+            echo ""
+            echo "Baza wymaga danych (pusta lub brak markera setupu)..."
+            php artisan migrate --force 2>&1 || return 1
+            echo "Seedowanie bazy danych..."
+            if php artisan db:seed --force 2>&1; then
+                touch "$SETUP_MARKER"
+                echo "Seed zakończony."
+            else
+                rm -f "$SETUP_MARKER"
+                return 1
+            fi
+        else
+            php artisan migrate --force 2>&1 || true
+        fi
+    }
+
     run_setup() {
         local failed=0
+        local should_seed=0
+
+        if database_needs_seed; then
+            should_seed=1
+        fi
 
         echo ""
         echo "============================================"
@@ -75,12 +197,21 @@ else
         echo "============================================"
         echo ""
 
+        # Katalogi wymagane przez Laravel przed artisan (cache, sesje, widoki)
+        mkdir -p /var/www/html/storage/framework/views \
+            /var/www/html/storage/framework/sessions \
+            /var/www/html/storage/framework/cache/data \
+            /var/www/html/storage/logs \
+            /var/www/html/bootstrap/cache
+
         # Bez .env Laravel nie wie jak połączyć się z bazą — kopiujemy z przykładu
         if [ ! -f /var/www/html/.env ]; then
             echo "[1/7] Tworzenie pliku .env..."
             cp /var/www/html/.env.example /var/www/html/.env || failed=1
+            sync_docker_db_env
         else
             echo "[1/7] Plik .env już istnieje - pomijam."
+            sync_docker_db_env
         fi
 
         load_env_from_file DB_HOST mysql
@@ -111,6 +242,7 @@ else
         echo "[5/7] Czekanie na gotowość MySQL..."
         RETRIES=30
         until mysql_ping; do
+            prepare_mysql
             RETRIES=$((RETRIES - 1))
             if [ $RETRIES -le 0 ]; then
                 echo "  MySQL nie odpowiada po 30 próbach - kontynuuję mimo to..."
@@ -124,8 +256,15 @@ else
             echo "  MySQL gotowy!"
         fi
 
-        echo "[6/7] Migracja bazy danych i seedowanie..."
-        php artisan migrate --force --seed 2>&1 || failed=1
+        echo "[6/7] Migracja bazy danych..."
+        php artisan migrate --force 2>&1 || failed=1
+
+        if [ $should_seed -eq 1 ]; then
+            echo "[6b/7] Seedowanie bazy danych (pierwszy setup)..."
+            php artisan db:seed --force 2>&1 || failed=1
+        else
+            echo "[6b/7] Seedowanie pominięte — setup już wykonany wcześniej."
+        fi
 
         echo "[7/7] Tworzenie dowiązania symbolicznego storage..."
         php artisan storage:link --force 2>&1 || failed=1
@@ -155,6 +294,8 @@ else
 
     if needs_setup; then
         run_setup
+    else
+        ensure_database
     fi
 
     # Zdjęcia zwierząt idą przez public/storage — link musi istnieć po każdym starcie

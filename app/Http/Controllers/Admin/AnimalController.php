@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\AnimalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Animal;
+use App\Support\ValidationRules;
 use App\Models\AnimalImage;
 use App\Models\Breed;
 use App\Models\Image;
@@ -75,7 +76,7 @@ class AnimalController extends Controller
             'medical_info' => 'nullable',
             'adoption_fee' => 'required|numeric|min:0',
             'status' => 'required|integer|in:0,1,2,3',
-            'arrival_date' => 'required|date',
+            'arrival_date' => ValidationRules::requiredTimestampDate(),
             'images.*' => 'nullable|image|max:5120',
             'sort_order' => 'nullable|array',
             'sort_order.*' => 'nullable|integer|min:0',
@@ -165,7 +166,7 @@ class AnimalController extends Controller
             'medical_info' => 'nullable',
             'adoption_fee' => 'required|numeric|min:0',
             'status' => 'required|integer|in:0,1,2,3',
-            'arrival_date' => 'required|date',
+            'arrival_date' => ValidationRules::requiredTimestampDate(),
             'images.*' => 'nullable|image|max:5120',
             'sort_order' => 'nullable|array',
             'sort_order.*' => 'nullable|integer|min:0',

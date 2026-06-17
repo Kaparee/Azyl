@@ -1,4 +1,9 @@
-<aside class="w-64 bg-[#111827] text-gray-300 flex flex-col h-full min-h-0 shadow-lg z-20 shrink-0">
+<aside
+    id="sidebar"
+    class="fixed inset-y-0 z-50 flex h-full min-h-0 w-64 min-w-[16rem] shrink-0 flex-col bg-[#111827] text-gray-300 shadow-lg transition-[left] duration-300 ease-in-out max-lg:-left-64 lg:left-0"
+    :style="sidebarOpen && window.innerWidth < 1024 ? { left: '0px' } : null"
+    @resize.window="if (window.innerWidth >= 1024) sidebarOpen = false"
+>
     <div class="h-20 flex items-center px-6 border-b border-gray-800 shrink-0">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-xl">
@@ -11,7 +16,7 @@
         </div>
     </div>
 
-    <nav class="flex-1 overflow-y-auto min-h-0 custom-scrollbar mt-6 px-4 space-y-1 pb-4">
+    <nav class="flex-1 overflow-y-auto min-h-0 custom-scrollbar mt-6 px-4 space-y-1 pb-4" @click="if (window.innerWidth < 1024) sidebarOpen = false">
         <x-sidebar-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" icon="view-grid">
             Pulpit główny
         </x-sidebar-link>
@@ -85,9 +90,9 @@
             <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
                 {{ substr(Auth::user()->name, 0, 2) }}
             </div>
-            <div>
-                <p class="text-sm font-medium text-white">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-gray-400">{{ $userRole ?? 'User' }}</p>
+            <div class="min-w-0">
+                <p class="text-sm font-medium text-white whitespace-nowrap">{{ Auth::user()->name }}</p>
+                <p class="text-xs text-gray-400 whitespace-nowrap">{{ $userRole ?? 'User' }}</p>
             </div>
         </div>
         <form method="POST" action="{{ route('logout') }}">

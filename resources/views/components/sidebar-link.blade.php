@@ -2,8 +2,8 @@
 
 @php
 $classes = ($active ?? false)
-            ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-orange-500 text-white font-medium transition-colors'
-            : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 font-medium transition-colors';
+            ? 'flex items-center gap-3 px-3 py-2.5 rounded-lg bg-orange-500 text-white font-medium transition-colors min-w-0'
+            : 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 font-medium transition-colors min-w-0';
 @endphp
 
 <a {{ $attributes->merge(['class' => $classes]) }}>
@@ -45,5 +45,5 @@ $classes = ($active ?? false)
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         @endif
     </svg>
-    {{ $slot }}
+    <span class="whitespace-nowrap">{{ $slot }}</span>
 </a>

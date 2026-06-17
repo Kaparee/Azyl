@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\AnimalStatus;
 use App\Models\Animal;
+use App\Support\ValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -43,7 +44,14 @@ class StoreFundraiserRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'target_amount' => ['required', 'numeric', 'min:1'],
-            'end_date' => ['nullable', 'date', 'after:today'],
+            'end_date' => ValidationRules::timestampDateRules(required: false, extra: ['after:today']),
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'end_date.before' => 'Data zakończenia nie może być późniejsza niż 18.01.2038 (limit typu TIMESTAMP w bazie danych).',
         ];
     }
 }

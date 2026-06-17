@@ -2,12 +2,12 @@
     "openapi": "3.0.0",
     "info": {
         "title": "Azyl API",
-        "description": "Dokumentacja API dla aplikacji schroniska",
+        "description": "Publiczne API read-only dla aplikacji schroniska Azyl",
         "version": "1.0.0"
     },
     "servers": [
         {
-            "url": "http://my-default-host.com",
+            "url": "http://localhost",
             "description": "Główny serwer API"
         }
     ],
@@ -17,8 +17,8 @@
                 "tags": [
                     "Zwierzęta"
                 ],
-                "summary": "Pobierz listę zwierząt",
-                "description": "Zwraca listę wszystkich zwierząt dostępnych do adopcji wraz z informacjami o rasie i gatunku.",
+                "summary": "Pobierz listę zwierząt dostępnych do adopcji",
+                "description": "Zwraca paginowaną listę zwierząt ze statusem AVAILABLE wraz z rasą i gatunkiem.",
                 "operationId": "33ea37fa99c2d039345ee028491a5fda",
                 "responses": {
                     "200": {
@@ -45,10 +45,459 @@
                                                     },
                                                     "age_months": {
                                                         "type": "integer"
+                                                    },
+                                                    "status": {
+                                                        "type": "integer"
+                                                    },
+                                                    "breed": {
+                                                        "type": "object"
                                                     }
                                                 },
                                                 "type": "object"
                                             }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/animals/{id}": {
+            "get": {
+                "tags": [
+                    "Zwierzęta"
+                ],
+                "summary": "Pobierz szczegóły zwierzęcia",
+                "description": "Zwraca pojedyncze zwierzę z rasą, gatunkiem i podstawowymi danymi adopcyjnymi.",
+                "operationId": "ba602e953d99f7a7607cbc5ebd424a5c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "age_months": {
+                                            "type": "integer"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "breed": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nie znaleziono"
+                    }
+                }
+            }
+        },
+        "/api/animals/{id}/medical-records": {
+            "get": {
+                "tags": [
+                    "Zwierzęta"
+                ],
+                "summary": "Pobierz kartotekę medyczną zwierzęcia",
+                "description": "Zwraca listę wpisów medycznych przypisanych do zwierzęcia.",
+                "operationId": "af39ee887015a84e3892d554432960b9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "treatment_type": {
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "type": "string"
+                                            },
+                                            "cost": {
+                                                "type": "number",
+                                                "format": "float"
+                                            },
+                                            "treatment_date": {
+                                                "type": "string",
+                                                "format": "date-time"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nie znaleziono"
+                    }
+                }
+            }
+        },
+        "/api/breeds": {
+            "get": {
+                "tags": [
+                    "Słowniki"
+                ],
+                "summary": "Pobierz listę ras",
+                "description": "Zwraca listę ras; opcjonalnie filtruje po species_id.",
+                "operationId": "8ac5366ed928715739b338a05885a1cc",
+                "parameters": [
+                    {
+                        "name": "species_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "species_id": {
+                                                "type": "integer"
+                                            },
+                                            "species": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/fundraisers": {
+            "get": {
+                "tags": [
+                    "Zbiórki"
+                ],
+                "summary": "Pobierz listę aktywnych zbiórek",
+                "description": "Zwraca paginowaną listę zbiórek o statusie aktywnym (status = 1).",
+                "operationId": "50737a75b47bbca190220ec6fc446608",
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "target_amount": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "collected_amount": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "status": {
+                                                        "type": "integer"
+                                                    },
+                                                    "animal": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/fundraisers/{id}": {
+            "get": {
+                "tags": [
+                    "Zbiórki"
+                ],
+                "summary": "Pobierz szczegóły zbiórki",
+                "description": "Zwraca pojedynczą zbiórkę wraz z powiązanym zwierzęciem.",
+                "operationId": "c403a1b6e94c9212b5705ef310e17667",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "description": {
+                                            "type": "string"
+                                        },
+                                        "target_amount": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "collected_amount": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "status": {
+                                            "type": "integer"
+                                        },
+                                        "animal": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nie znaleziono"
+                    }
+                }
+            }
+        },
+        "/api/news": {
+            "get": {
+                "tags": [
+                    "Aktualności"
+                ],
+                "summary": "Pobierz listę opublikowanych aktualności",
+                "description": "Zwraca paginowaną listę aktualności z flagą is_published = true.",
+                "operationId": "a03e1a336bc332d11c385fe176757db9",
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "type": "string"
+                                                    },
+                                                    "published_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/news/{id}": {
+            "get": {
+                "tags": [
+                    "Aktualności"
+                ],
+                "summary": "Pobierz szczegóły aktualności",
+                "description": "Zwraca pojedynczy opublikowany artykuł.",
+                "operationId": "fdc889540fee482bc9fb94d60c177807",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        },
+                                        "title": {
+                                            "type": "string"
+                                        },
+                                        "content": {
+                                            "type": "string"
+                                        },
+                                        "published_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nie znaleziono"
+                    }
+                }
+            }
+        },
+        "/api/species": {
+            "get": {
+                "tags": [
+                    "Słowniki"
+                ],
+                "summary": "Pobierz listę gatunków",
+                "description": "Zwraca wszystkie gatunki zwierząt zarejestrowane w systemie.",
+                "operationId": "2e45feb7c995dbf6e6b4eb39a15fe087",
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/stats": {
+            "get": {
+                "tags": [
+                    "Statystyki"
+                ],
+                "summary": "Pobierz podsumowanie publiczne",
+                "description": "Zwraca podstawowe statystyki schroniska (liczba zwierząt, zbiórek, aktualności).",
+                "operationId": "15e4c40e8bf4ede8bde3c40ae809abc8",
+                "responses": {
+                    "200": {
+                        "description": "Sukces",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "animals_total": {
+                                            "type": "integer"
+                                        },
+                                        "animals_available": {
+                                            "type": "integer"
+                                        },
+                                        "active_fundraisers": {
+                                            "type": "integer"
+                                        },
+                                        "published_news": {
+                                            "type": "integer"
+                                        },
+                                        "species_count": {
+                                            "type": "integer"
                                         }
                                     },
                                     "type": "object"
@@ -64,6 +513,22 @@
         {
             "name": "Zwierzęta",
             "description": "Zwierzęta"
+        },
+        {
+            "name": "Słowniki",
+            "description": "Słowniki"
+        },
+        {
+            "name": "Zbiórki",
+            "description": "Zbiórki"
+        },
+        {
+            "name": "Aktualności",
+            "description": "Aktualności"
+        },
+        {
+            "name": "Statystyki",
+            "description": "Statystyki"
         }
     ]
 }

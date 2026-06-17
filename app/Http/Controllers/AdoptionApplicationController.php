@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RespondsWithWebOrJson;
 use App\Enums\AdoptionStatus;
 use App\Enums\AnimalStatus;
 use App\Http\Requests\StoreAdoptionApplicationRequest;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 class AdoptionApplicationController extends Controller
 {
+    use RespondsWithWebOrJson;
+
     /**
      * Panel personelu — wszystkie wnioski w jednym miejscu, żeby nie szukać ich po profilach zwierząt.
      */
@@ -47,8 +50,12 @@ class AdoptionApplicationController extends Controller
 
         $application->animal->update(['status' => AnimalStatus::PENDING]);
 
-        // Flash po redirect — użytkownik widzi potwierdzenie na stronie zwierzęcia.
-        return redirect()->back()->with('status', 'Wniosek o adopcję został złożony pomyślnie.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Wniosek o adopcję został złożony pomyślnie.',
+            ['application' => $application->load('animal')],
+            201,
+        );
     }
 
     /**
@@ -95,7 +102,14 @@ class AdoptionApplicationController extends Controller
             }
         });
 
-        return redirect()->back()->with('success', 'Status wniosku został zaktualizowany.');
+        return $this->jsonOrRedirect(
+            $request,
+            'Status wniosku został zaktualizowany.',
+            ['application' => $application->load('animal')],
+            200,
+            null,
+            'success'
+        );
     }
 
     /**
@@ -147,7 +161,14 @@ class AdoptionApplicationController extends Controller
         }
 
         if ($application->status !== AdoptionStatus::PENDING) {
-            return back()->with('error', 'Można usunąć tylko oczekujące wnioski.');
+            return $this->jsonOrRedirect(
+                request(),
+                'Można usunąć tylko oczekujące wnioski.',
+                [],
+                422,
+                null,
+                'error'
+            );
         }
 
         // Po usunięciu ostatniego wniosku przywracamy zwierzę do adopcji.
@@ -165,8 +186,14 @@ class AdoptionApplicationController extends Controller
             }
         });
 
-        return redirect()->route('user.adoption-applications.index')
-            ->with('status', 'Wniosek został usunięty.');
+        return $this->jsonOrRedirect(
+            request(),
+            'Wniosek został usunięty.',
+            [],
+            200,
+            route('user.adoption-applications.index'),
+            'status'
+        );
     }
 
     /**
@@ -188,7 +215,13 @@ class AdoptionApplicationController extends Controller
             }
         });
 
-        return redirect()->route('admin.adoption-applications.index')
-            ->with('success', 'Wniosek został usunięty.');
+        return $this->jsonOrRedirect(
+            request(),
+            'Wniosek został usunięty.',
+            [],
+            200,
+            route('admin.adoption-applications.index'),
+            'success'
+        );
     }
 }
