@@ -1,12 +1,8 @@
-@auth
-<x-app-layout>
-@else
-@extends('layouts.public')
+@extends(auth()->check() ? 'layouts.app_wrapper' : 'layouts.public')
 
 @section('title', $fundraiser->title.' - Zbiórka')
 
 @section('content')
-@endauth
 
     <div class="py-12 bg-gray-50">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -22,7 +18,7 @@
                 </a>
             </div>
 
-            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Admin', 'Pracownik']))
+            @if(auth()->check() && in_array(auth()->user()?->role?->name, ['Admin', 'Pracownik']))
                 <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
                     <span class="text-sm font-semibold text-gray-700">Opcje administracyjne:</span>
                     <div class="flex items-center gap-3">
@@ -187,8 +183,4 @@
         </div>
     </div>
 
-@auth
-</x-app-layout>
-@else
 @endsection
-@endauth
