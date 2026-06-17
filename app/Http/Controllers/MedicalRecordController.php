@@ -35,7 +35,9 @@ class MedicalRecordController extends Controller
             $q->orderByDesc('treatment_date');
         }]);
 
-        $animals = $query->paginate(15)->appends($request->query());
+        $animals = $query->orderByDesc('id')->paginate(15)->appends($request->query());
+
+        $animalsForSelect = Animal::with('breed')->orderBy('name')->get(['id', 'name', 'breed_id']);
 
         $animals->getCollection()->each(function (Animal $animal) {
             $animal->medicalRecords->each(function ($record) {
@@ -43,7 +45,7 @@ class MedicalRecordController extends Controller
             });
         });
 
-        return view('medical-records.index', compact('animals'));
+        return view('medical-records.index', compact('animals', 'animalsForSelect'));
     }
 
     /** Nowy wpis trafia od razu do karty zwierzęcia — weterynarz nie musi odświeżać całej listy ręcznie. */

@@ -155,7 +155,7 @@
                         <label class="block text-sm font-medium text-gray-700">Zwierzę</label>
                         <select name="animal_id" x-model="selectedAnimalId" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 text-sm">
                             <option value="">Wybierz...</option>
-                            @foreach($animals as $animal)
+                            @foreach($animalsForSelect as $animal)
                                 <option value="{{ $animal->id }}">{{ $animal->name }} ({{ $animal->breed->name ?? '' }})</option>
                             @endforeach
                         </select>
