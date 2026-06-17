@@ -15,12 +15,12 @@
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             @if ($news->image && file_exists(public_path('storage/'.$news->image)))
-                <div class="w-full h-80 md:h-[500px] bg-gray-200">
-                    <img src="{{ asset('storage/'.$news->image) }}" alt="{{ $news->title }}" class="w-full h-full object-cover">
+                <div class="w-full bg-gray-100 flex justify-center">
+                    <img src="{{ asset('storage/'.$news->image) }}" alt="{{ $news->title }}" class="w-full h-auto max-h-[700px] object-contain">
                 </div>
             @else
-                <div class="w-full h-80 md:h-[500px] bg-gray-200">
-                    <img src="{{ asset('images/hero_shelter.png') }}" alt="{{ $news->title }}" class="w-full h-full object-cover">
+                <div class="w-full bg-gray-100 flex justify-center">
+                    <img src="{{ asset('images/hero_shelter.png') }}" alt="{{ $news->title }}" class="w-full h-auto max-h-[700px] object-cover">
                 </div>
             @endif
 

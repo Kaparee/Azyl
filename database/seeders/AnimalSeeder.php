@@ -135,7 +135,7 @@ class AnimalSeeder extends Seeder
                 'accepts_dogs' => $faker->boolean(60),
                 'requires_responsible_caregiver' => $faker->boolean(30),
                 'caregiver_id' => !empty($caregiverIds) ? $faker->randomElement($caregiverIds) : null,
-                'contact_phone' => $faker->phoneNumber(),
+                'contact_phone' => sprintf('+48 %d %03d %03d', $faker->numberBetween(500, 899), $faker->numberBetween(0, 999), $faker->numberBetween(0, 999)),
                 'visiting_hours' => 'Pon-Pt 10:00-17:00, Sob 10:00-15:00',
                 
                 'created_at' => $randomDate,
