@@ -40,7 +40,7 @@
                     </div>
                     <div>
                         <label for="end_date" class="block text-sm font-bold text-gray-700 mb-2">Data zakończenia (opcjonalnie)</label>
-                        <input type="date" id="end_date" name="end_date" value="{{ old('end_date', $fundraiser->end_date ? \Carbon\Carbon::parse($fundraiser->end_date)->format('Y-m-d') : '') }}"
+                        <input type="date" id="end_date" name="end_date" value="{{ old('end_date', $fundraiser->end_date ? \Carbon\Carbon::parse($fundraiser->end_date)->format('Y-m-d') : '') }}" min="{{ date('Y-m-d') }}"
                             class="w-full rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
                     </div>
                 </div>
