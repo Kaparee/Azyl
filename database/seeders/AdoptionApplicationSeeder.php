@@ -52,20 +52,25 @@ class AdoptionApplicationSeeder extends Seeder
                 ->day($faker->numberBetween(1, 28));
             $createdAt = (clone $approvedAt)->subDays($faker->numberBetween(3, 21));
 
-            AdoptionApplication::create([
-                'user_id' => $users->random()->id,
-                'animal_id' => $animal->id,
-                'status' => AdoptionStatus::APPROVED,
-                'message' => sprintf(
-                    'Wniosek o adopcję %s. %s %s %s',
-                    $animal->name,
-                    $faker->randomElement($messageOpenings),
-                    $faker->randomElement($messageDetails),
-                    $faker->sentence(7)
-                ),
-                'created_at' => $createdAt,
-                'updated_at' => $approvedAt,
-            ]);
+            $userId = $users->random()->id;
+            AdoptionApplication::firstOrCreate(
+                [
+                    'user_id' => $userId,
+                    'animal_id' => $animal->id,
+                ],
+                [
+                    'status' => AdoptionStatus::APPROVED,
+                    'message' => sprintf(
+                        'Wniosek o adopcję %s. %s %s %s',
+                        $animal->name,
+                        $faker->randomElement($messageOpenings),
+                        $faker->randomElement($messageDetails),
+                        $faker->sentence(7)
+                    ),
+                    'created_at' => $createdAt,
+                    'updated_at' => $approvedAt,
+                ]
+            );
 
             $animal->update(['status' => AnimalStatus::ADOPTED]);
         }
