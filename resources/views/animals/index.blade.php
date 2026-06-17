@@ -60,11 +60,12 @@
                             <div>
                                 <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status</label>
                                 <select name="status" class="w-full rounded-2xl border-slate-200 text-sm focus:border-orange-400 focus:ring-orange-400">
-                                    <option value="">Wszystkie</option>
-                                    <option value="0" @selected(request('status') === '0')>Do adopcji</option>
-                                    <option value="1" @selected(request('status') === '1')>W trakcie</option>
-                                    <option value="2" @selected(request('status') === '2')>Adoptowane</option>
-                                    <option value="3" @selected(request('status') === '3')>Niedostępne</option>
+                                    <option value="" @selected($statusFilter === null)>Do adopcji (domyślnie)</option>
+                                    <option value="all" @selected($statusFilter === 'all')>Wszystkie</option>
+                                    <option value="0" @selected($statusFilter === '0')>Do adopcji</option>
+                                    <option value="1" @selected($statusFilter === '1')>W trakcie</option>
+                                    <option value="2" @selected($statusFilter === '2')>Adoptowane</option>
+                                    <option value="3" @selected($statusFilter === '3')>Niedostępne</option>
                                 </select>
                             </div>
 
@@ -99,37 +100,12 @@
                 <section>
                     <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                         @forelse ($animals as $animal)
-                            @php
-                                $firstImage = $animal->animalImages->sortBy('sort_order')->first();
-                                $imagePath = $firstImage?->image?->file_name;
-                                $hasImage = $imagePath && file_exists(public_path('storage/'.$imagePath));
-                                $statusValue = $animal->status?->value ?? $animal->status;
-                                $statusLabel = match ($statusValue) {
-                                    0 => 'Do adopcji',
-                                    1 => 'W trakcie',
-                                    2 => 'Adoptowany',
-                                    3 => 'Niedostępny',
-                                    default => 'Brak statusu',
-                                };
-                                $statusClass = match ($statusValue) {
-                                    0 => 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-                                    1 => 'bg-amber-50 text-amber-700 ring-amber-100',
-                                    2 => 'bg-sky-50 text-sky-700 ring-sky-100',
-                                    3 => 'bg-slate-100 text-slate-600 ring-slate-200',
-                                    default => 'bg-slate-100 text-slate-600 ring-slate-200',
-                                };
-                            @endphp
-
                             <article class="group overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-orange-100 transition hover:-translate-y-1 hover:shadow-xl">
                                 <div class="relative">
-                                    @if ($hasImage)
-                                        <img src="{{ asset('storage/'.$imagePath) }}" alt="{{ $animal->name }}" class="h-56 w-full object-cover">
-                                    @else
-                                        <img src="{{ asset('images/hero_shelter.png') }}" alt="{{ $animal->name }}" class="h-56 w-full object-cover">
-                                    @endif
+                                    <img src="{{ $animal->photo_url }}" alt="{{ $animal->name }}" class="h-56 w-full object-cover">
 
-                                    <div class="absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ring-1 {{ $statusClass }}">
-                                        {{ $statusLabel }}
+                                    <div class="absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ring-1 {{ $animal->status_class }}">
+                                        {{ $animal->status_label }}
                                     </div>
 
                                     <div class="absolute right-4 top-4 rounded-full bg-white/95 px-3 py-1 text-xs font-bold text-orange-500 shadow-sm">
@@ -155,7 +131,7 @@
                                             <p class="text-slate-500">mies.</p>
                                         </div>
                                         <div class="rounded-2xl bg-orange-50 px-2 py-3">
-                                            <p class="font-bold text-slate-900">{{ $animal->genders == 0 ? 'Samiec' : 'Samica' }}</p>
+                                            <p class="font-bold text-slate-900">{{ $animal->gender_label }}</p>
                                             <p class="text-slate-500">płeć</p>
                                         </div>
                                         <div class="rounded-2xl bg-orange-50 px-2 py-3">

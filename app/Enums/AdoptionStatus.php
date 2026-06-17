@@ -12,10 +12,10 @@ enum AdoptionStatus: int
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Pending',
-            self::APPROVED => 'Approved',
-            self::REJECTED => 'Rejected',
-            self::CANCELLED => 'Cancelled',
+            self::PENDING => 'Oczekujący',
+            self::APPROVED => 'Zaakceptowany',
+            self::REJECTED => 'Odrzucony',
+            self::CANCELLED => 'Anulowany',
         };
     }
 }

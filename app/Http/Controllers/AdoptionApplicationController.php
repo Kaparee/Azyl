@@ -7,13 +7,14 @@ use App\Enums\AnimalStatus;
 use App\Http\Requests\StoreAdoptionApplicationRequest;
 use App\Models\AdoptionApplication;
 use App\Models\Animal;
+use App\Support\AnimalPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AdoptionApplicationController extends Controller
 {
     /**
-     * Display a listing of applications (Admin/Pracownik).
+     * Panel personelu — wszystkie wnioski w jednym miejscu, żeby nie szukać ich po profilach zwierząt.
      */
     public function index(Request $request)
     {
@@ -33,7 +34,7 @@ class AdoptionApplicationController extends Controller
     }
 
     /**
-     * Store a newly created application in storage.
+     * Składanie wniosku — zwierzę przechodzi w status oczekujący, żeby nikt inny go nie adoptował równolegle.
      */
     public function store(StoreAdoptionApplicationRequest $request)
     {
@@ -46,11 +47,12 @@ class AdoptionApplicationController extends Controller
 
         $application->animal->update(['status' => AnimalStatus::PENDING]);
 
-        return redirect()->back()->with('success', 'Wniosek o adopcję został złożony pomyślnie.');
+        // Flash po redirect — użytkownik widzi potwierdzenie na stronie zwierzęcia.
+        return redirect()->back()->with('status', 'Wniosek o adopcję został złożony pomyślnie.');
     }
 
     /**
-     * Display the specified application.
+     * Szczegóły wniosku dla admina — relacje ładujemy tutaj, widok tylko je wyświetla (MVC).
      */
     public function show(AdoptionApplication $application)
     {
@@ -60,7 +62,7 @@ class AdoptionApplicationController extends Controller
     }
 
     /**
-     * Update the status of the application (Admin/Pracownik).
+     * Akceptacja lub odrzucenie — status zwierzęcia musi się zmienić razem z wnioskiem, stąd transakcja.
      */
     public function update(Request $request, AdoptionApplication $application)
     {
@@ -70,12 +72,14 @@ class AdoptionApplicationController extends Controller
 
         $newStatus = AdoptionStatus::from($request->status);
 
+        // Transakcja — status zwierzęcia i wniosków musi się zmienić razem albo wcale.
         DB::transaction(function () use ($application, $newStatus) {
             $application->update(['status' => $newStatus]);
 
             if ($newStatus === AdoptionStatus::APPROVED) {
                 $application->animal->update(['status' => AnimalStatus::ADOPTED]);
 
+                // Pozostałe oczekujące wnioski anulujemy — zwierzę ma już nowego właściciela.
                 AdoptionApplication::where('animal_id', $application->animal_id)
                     ->where('id', '!=', $application->id)
                     ->where('status', AdoptionStatus::PENDING)
@@ -95,7 +99,7 @@ class AdoptionApplicationController extends Controller
     }
 
     /**
-     * Display a listing of applications for the authenticated user.
+     * Moje wnioski — użytkownik widzi tylko swoje; zdjęcia formatujemy tutaj, nie w Blade.
      */
     public function myApplications(Request $request)
     {
@@ -108,11 +112,17 @@ class AdoptionApplicationController extends Controller
 
         $applications = $query->latest()->paginate(15)->withQueryString();
 
+        $applications->getCollection()->transform(function (AdoptionApplication $application) {
+            $application->animal->setAttribute('photo_url', AnimalPresenter::photoUrl($application->animal));
+
+            return $application;
+        });
+
         return view('user.adoptions.index', compact('applications'));
     }
 
     /**
-     * Display the specified application for the authenticated user.
+     * Sprawdzamy user_id — inaczej ktoś mógłby podejrzeć cudzy wniosek znając tylko ID w URL.
      */
     public function showMyApplication(Request $request, AdoptionApplication $application)
     {
@@ -122,11 +132,13 @@ class AdoptionApplicationController extends Controller
 
         $application->load(['animal.animalImages.image', 'animal.breed.species']);
 
-        return view('user.adoptions.show', compact('application'));
+        $photoUrl = AnimalPresenter::photoUrl($application->animal);
+
+        return view('user.adoptions.show', compact('application', 'photoUrl'));
     }
 
     /**
-     * Remove the specified pending application for the authenticated user.
+     * Wycofanie wniosku — tylko oczekujące; po ostatnim wycofaniu zwierzę wraca do adopcji.
      */
     public function destroy(AdoptionApplication $application)
     {
@@ -138,6 +150,7 @@ class AdoptionApplicationController extends Controller
             return back()->with('error', 'Można usunąć tylko oczekujące wnioski.');
         }
 
+        // Po usunięciu ostatniego wniosku przywracamy zwierzę do adopcji.
         DB::transaction(function () use ($application) {
             $animalId = $application->animal_id;
             $application->delete();

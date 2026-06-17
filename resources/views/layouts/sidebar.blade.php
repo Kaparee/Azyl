@@ -6,53 +6,49 @@
             </div>
             <div>
                 <h1 class="text-white font-bold text-xl leading-tight">Azyl</h1>
-                <span class="text-xs text-orange-400 font-medium">{{ Auth::user()->role->name ?? 'Pracownik' }}</span>
+                <span class="text-xs text-orange-400 font-medium">{{ $userRole ?? 'Pracownik' }}</span>
             </div>
         </div>
     </div>
 
     <nav class="flex-1 overflow-y-auto min-h-0 custom-scrollbar mt-6 px-4 space-y-1 pb-4">
-        @php
-            $role = Auth::user()->role?->name;
-        @endphp
-
         <x-sidebar-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" icon="view-grid">
             Pulpit główny
         </x-sidebar-link>
 
-        @if(in_array($role, ['Admin', 'Pracownik']))
+        @if(in_array($userRole, ['Admin', 'Pracownik']))
         <x-sidebar-link href="{{ route('admin.animals.index') }}" :active="request()->routeIs('admin.animals.*') || request()->routeIs('admin.species.*') || request()->routeIs('admin.breeds.*')" icon="paw">
             Zwierzęta
         </x-sidebar-link>
-        @elseif($role == 'Wolontariusz')
+        @elseif($userRole == 'Wolontariusz')
         <x-sidebar-link href="{{ route('panel.animals.index') }}" :active="request()->routeIs('panel.animals.*')" icon="paw">
             Zwierzęta
         </x-sidebar-link>
-        @elseif($role == 'Adoptujący')
+        @elseif($userRole == 'Adoptujący')
         <x-sidebar-link href="{{ route('user.liked-animals.index') }}" :active="request()->routeIs('user.liked-animals.*')" icon="heart">
             Polubione zwierzęta
         </x-sidebar-link>
         @endif
 
-        @if(in_array($role, ['Admin', 'Pracownik']))
+        @if(in_array($userRole, ['Admin', 'Pracownik']))
         <x-sidebar-link href="{{ route('admin.adoption-applications.index') }}" :active="request()->routeIs('admin.adoption-applications.*')" icon="document">
             Wnioski adopcyjne
         </x-sidebar-link>
         @endif
 
-        @if($role == 'Adoptujący')
+        @if($userRole == 'Adoptujący')
         <x-sidebar-link href="{{ route('user.adoption-applications.index') }}" :active="request()->routeIs('user.adoption-applications.*')" icon="document-text">
             Moje wnioski
         </x-sidebar-link>
         @endif
 
-        @if(!in_array($role, ['Adoptujący', 'Weterynarz']))
+        @if(!in_array($userRole, ['Adoptujący', 'Weterynarz']))
         <x-sidebar-link href="{{ route('volunteer-tasks.index') }}" :active="request()->routeIs('volunteer-tasks.*')" icon="clipboard-list">
             Plan dnia
         </x-sidebar-link>
         @endif
 
-        @if(in_array($role, ['Admin', 'Weterynarz']))
+        @if(in_array($userRole, ['Admin', 'Weterynarz']))
         <x-sidebar-link href="{{ route('medical-records.index') }}" :active="request()->routeIs('medical-records.*')" icon="stethoscope">
             Kartoteki medyczne
         </x-sidebar-link>
@@ -62,13 +58,13 @@
             Finanse / Zbiórki
         </x-sidebar-link>
         
-        @if($role == 'Admin')
+        @if($userRole == 'Admin')
         <x-sidebar-link href="{{ route('users.index') }}" :active="request()->routeIs('users.*')" icon="users">
             Użytkownicy
         </x-sidebar-link>
         @endif
 
-        @if(in_array($role, ['Admin', 'Pracownik']))
+        @if(in_array($userRole, ['Admin', 'Pracownik']))
         <x-sidebar-link href="{{ route('admin.news.index') }}" :active="request()->routeIs('admin.news.*')" icon="annotation">
             Aktualności
         </x-sidebar-link>
@@ -91,7 +87,7 @@
             </div>
             <div>
                 <p class="text-sm font-medium text-white">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-gray-400">{{ Auth::user()->role->name ?? 'User' }}</p>
+                <p class="text-xs text-gray-400">{{ $userRole ?? 'User' }}</p>
             </div>
         </div>
         <form method="POST" action="{{ route('logout') }}">

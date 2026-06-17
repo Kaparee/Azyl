@@ -19,11 +19,6 @@
             </div>
         </div>
 
-        @php
-            $totalToday = $completedToday + $pending;
-            $progressPercent = $totalToday > 0 ? round(($completedToday / $totalToday) * 100) : 0;
-        @endphp
-
         <!-- POSTĘP DNIA (PROGRESS BAR) -->
         <div class="bg-white rounded-3xl p-8 shadow-lg border border-gray-100">
             <div class="flex items-center justify-between mb-4">
@@ -75,7 +70,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                     </div>
                 </div>
-                <h3 class="text-4xl font-black text-gray-900 mb-1">{{ $tasks->where('status', 3)->count() }}</h3>
+                <h3 class="text-4xl font-black text-gray-900 mb-1">{{ $completedAll }}</h3>
                 <p class="text-gray-500 font-medium">Wszystkie wykonane</p>
             </div>
         </div>

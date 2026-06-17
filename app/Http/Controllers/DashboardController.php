@@ -9,11 +9,15 @@ use App\Models\Donation;
 use App\Models\Species;
 use App\Models\User;
 use App\Models\VolunteerTask;
+use App\Support\AnimalPresenter;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    /**
+     * Jeden URL panelu — rola decyduje, który widok i zestaw statystyk pokazujemy użytkownikowi.
+     */
     public function index()
     {
         $user = Auth::user();
@@ -38,6 +42,7 @@ class DashboardController extends Controller
         return $this->userDashboard();
     }
 
+    // Procent zmiany m/m — przy zerowym poprzednim miesiącu unikamy dzielenia przez zero.
     private function calculatePercentageChange($current, $previous)
     {
         if ($previous == 0) {
@@ -47,6 +52,7 @@ class DashboardController extends Controller
         return round((($current - $previous) / $previous) * 100);
     }
 
+    // Statystyki i wykresy liczymy tutaj — widok admina nie powinien odpytywać bazy samodzielnie.
     private function adminDashboard()
     {
         $currentMonth = Carbon::now()->month;
@@ -116,6 +122,7 @@ class DashboardController extends Controller
         ));
     }
 
+    /** Weterynarz potrzebuje tylko liczby pacjentów — reszta jest w module kart medycznych. */
     private function vetDashboard()
     {
         $patientsCount = Animal::count();
@@ -123,6 +130,7 @@ class DashboardController extends Controller
         return view('dashboard.vet', compact('patientsCount'));
     }
 
+    /** Pracownik widzi skrót adopcji — szczegóły obsługuje osobna lista wniosków. */
     private function workerDashboard()
     {
         $animalsCount = Animal::count();
@@ -131,15 +139,30 @@ class DashboardController extends Controller
         return view('dashboard.worker', compact('animalsCount', 'pendingApplicationsCount'));
     }
 
+    /**
+     * Panel wolontariusza — statystyki liczymy z jego zadań, żeby widok tylko je pokazał.
+     */
     private function volunteerDashboard()
     {
         $tasks = VolunteerTask::where('assigned_to', Auth::id())->get();
+        // Postęp dzienny: ukończone vs oczekujące (status 3 vs 1).
         $completedToday = $tasks->where('status', 3)->count();
         $pending = $tasks->where('status', 1)->count();
+        $totalToday = $completedToday + $pending;
+        $progressPercent = $totalToday > 0 ? (int) round(($completedToday / $totalToday) * 100) : 0;
+        $completedAll = $tasks->where('status', 3)->count();
 
-        return view('dashboard.volunteer', compact('tasks', 'completedToday', 'pending'));
+        return view('dashboard.volunteer', compact(
+            'tasks',
+            'completedToday',
+            'pending',
+            'totalToday',
+            'progressPercent',
+            'completedAll'
+        ));
     }
 
+    /** Panel zwykłego użytkownika — ostatnie wnioski i darowizny, żeby nie szukać ich w menu. */
     private function userDashboard()
     {
         /** @var User $user */
@@ -150,6 +173,10 @@ class DashboardController extends Controller
             ->latest()
             ->take(5)
             ->get();
+
+        $applications->each(function ($application) {
+            $application->animal->setAttribute('photo_url', AnimalPresenter::photoUrl($application->animal));
+        });
 
         $donations = $user->donations()->with('fundraiser.animal')->latest()->get();
 

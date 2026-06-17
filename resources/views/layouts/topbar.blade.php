@@ -1,25 +1,3 @@
-@php
-    $searchRoutes = [
-        'admin.animals.index' => ['route' => 'admin.animals.index', 'placeholder' => 'Szukaj zwierząt...'],
-        'panel.animals.index' => ['route' => 'panel.animals.index', 'placeholder' => 'Szukaj zwierząt...'],
-        'medical-records.index' => ['route' => 'medical-records.index', 'placeholder' => 'Szukaj pacjenta...'],
-        'users.index' => ['route' => 'users.index', 'placeholder' => 'Szukaj użytkownika...'],
-        'volunteer-tasks.index' => ['route' => 'volunteer-tasks.index', 'placeholder' => 'Szukaj zadania...'],
-        'admin.adoption-applications.index' => ['route' => 'admin.adoption-applications.index', 'placeholder' => 'Szukaj wniosku...'],
-        'fundraisers.index' => ['route' => 'fundraisers.index', 'placeholder' => 'Szukaj zbiórki...'],
-        'admin.news.index' => ['route' => 'admin.news.index', 'placeholder' => 'Szukaj aktualności...'],
-        'user.adoption-applications.index' => ['route' => 'user.adoption-applications.index', 'placeholder' => 'Szukaj wniosku...'],
-    ];
-
-    $searchConfig = null;
-    foreach ($searchRoutes as $routeName => $config) {
-        if (request()->routeIs($routeName)) {
-            $searchConfig = $config;
-            break;
-        }
-    }
-@endphp
-
 <header class="bg-white shadow-sm border-b border-gray-200 h-20 flex items-center {{ $searchConfig ? 'justify-between' : 'justify-end' }} px-8 z-10 shrink-0">
     @if($searchConfig)
         <form method="GET" action="{{ route($searchConfig['route']) }}" class="flex items-center bg-gray-100 rounded-full px-4 py-2 w-96">
@@ -37,7 +15,7 @@
 
     <div class="flex items-center gap-6">
         <div class="text-sm font-medium text-orange-500">
-            {{ Auth::user()->role->name ?? 'Pracownik' }}
+            {{ $userRole ?? 'Pracownik' }}
         </div>
         <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold cursor-pointer">
             {{ substr(Auth::user()->name, 0, 2) }}

@@ -91,7 +91,7 @@
         <tbody>
             @forelse($animal->medicalRecords as $record)
                 <tr>
-                    <td>{{ \Carbon\Carbon::parse($record->treatment_date)->format('Y-m-d') }}</td>
+                    <td>{{ $record->date_formatted }}</td>
                     <td><span class="badge">{{ $record->treatment_type }}</span></td>
                     <td>{{ $record->description }}</td>
                     <td>{{ number_format($record->cost, 2) }}</td>

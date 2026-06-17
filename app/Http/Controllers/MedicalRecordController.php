@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Animal;
 use App\Models\MedicalRecord;
+use App\Support\DatePresenter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class MedicalRecordController extends Controller
 {
+    /**
+     * Karta medyczna — filtrujemy po typie zabiegu, daty formatujemy w kontrolerze (MVC).
+     */
     public function index(Request $request)
     {
         $treatmentType = $request->input('treatment_type');
@@ -33,9 +37,16 @@ class MedicalRecordController extends Controller
 
         $animals = $query->paginate(15)->appends($request->query());
 
+        $animals->getCollection()->each(function (Animal $animal) {
+            $animal->medicalRecords->each(function ($record) {
+                $record->setAttribute('date_formatted', DatePresenter::formatDate($record->treatment_date));
+            });
+        });
+
         return view('medical-records.index', compact('animals'));
     }
 
+    /** Nowy wpis trafia od razu do karty zwierzęcia — weterynarz nie musi odświeżać całej listy ręcznie. */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -51,6 +62,7 @@ class MedicalRecordController extends Controller
         return back()->with('success', 'Dodano nowy wpis medyczny.');
     }
 
+    /** Korekta wpisu z listy — walidacja tu, żeby błędne dane nie trafiły do historii leczenia. */
     public function update(Request $request, MedicalRecord $record)
     {
         $validated = $request->validate([
@@ -65,6 +77,7 @@ class MedicalRecordController extends Controller
         return back()->with('success', 'Zaktualizowano wpis medyczny.');
     }
 
+    /** Usuwamy tylko pojedynczy wpis — zwierzę zostaje, żeby nie gubić reszty karty medycznej. */
     public function destroy(MedicalRecord $record)
     {
         $record->delete();
@@ -72,11 +85,18 @@ class MedicalRecordController extends Controller
         return back()->with('success', 'Usunięto wpis medyczny.');
     }
 
+    /**
+     * Eksport PDF — ta sama historia co na liście, ale do wydruku dla weterynarza.
+     */
     public function exportPdf(Animal $animal)
     {
         $animal->load(['breed.species', 'medicalRecords' => function ($q) {
             $q->orderByDesc('treatment_date');
         }]);
+
+        $animal->medicalRecords->each(function ($record) {
+            $record->setAttribute('date_formatted', DatePresenter::formatDate($record->treatment_date));
+        });
 
         $pdf = Pdf::loadView('medical-records.pdf', compact('animal'));
 

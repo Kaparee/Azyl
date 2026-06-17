@@ -33,7 +33,7 @@
                     @foreach($likedAnimals as $animal)
                     <div class="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow flex flex-col justify-between">
                         <div class="h-40 bg-gray-200 relative">
-                            <x-animal-image :animal="$animal" class="w-full h-full object-cover" />
+                            <x-animal-image :src="$animal->photo_url" class="w-full h-full object-cover" />
                             <form action="{{ route('animals.like', $animal) }}" method="POST" class="absolute top-3 right-3">
                                 @csrf
                                 <button type="submit" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-red-500 hover:scale-110 shadow transition-transform">
