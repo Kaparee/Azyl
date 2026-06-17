@@ -4,9 +4,9 @@
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900">Zadania wolontariuszy</h2>
-                <p class="text-sm text-gray-500">Dzisiaj, {{ \Carbon\Carbon::now()->translatedFormat('l, d F Y') }}</p>
+                <p class="text-sm text-gray-500">Dzisiaj, {{ $todayFormatted }}</p>
             </div>
-            @if(in_array(Auth::user()->role_id, [1, 2, 3]))
+            @if($canAssignTasks)
             <button @click="showTaskModal = true" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-sm transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Zleć zadanie
@@ -25,7 +25,7 @@
                 <div class="space-y-1">
                     @foreach($urgentTasks as $ut)
                     <p class="text-sm text-red-700 flex items-center gap-2">
-                        <span>💊</span> <span class="font-bold">{{ $ut->title }} o {{ \Carbon\Carbon::parse($ut->time)->format('H:i') }}</span>
+                        <span>💊</span> <span class="font-bold">{{ $ut->title }} o {{ $ut->time_formatted }}</span>
                         <span class="text-xs opacity-80">({{ $ut->description }})</span>
                     </p>
                     @endforeach
@@ -97,7 +97,7 @@
                             </h4>
                             <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                {{ \Carbon\Carbon::parse($task->time)->format('H:i') }}
+                                {{ $task->time_formatted }}
                                 @if($task->is_urgent)
                                 <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold animate-pulse">Pilne</span>
                                 @endif
@@ -149,7 +149,7 @@
 
                     </div>
                     @endif
-                    @if(in_array(Auth::user()->role_id, [1, 2, 3]))
+                    @if($canAssignTasks)
                     <div class="flex items-center gap-2 pt-3 border-t border-gray-100 mt-3">
                         <button @click="selectedTask = {{ $task }}; showEditModal = true" class="text-orange-500 hover:text-orange-700 text-xs font-medium">Edytuj zadanie</button>
                         <button @click="selectedTask = {{ $task }}; showDeleteModal = true" class="text-red-500 hover:text-red-700 text-xs font-medium">Usuń zadanie</button>
@@ -168,7 +168,7 @@
             @endforelse
         </div>
 
-        @if(in_array(Auth::user()->role_id, [1, 2, 3]))
+        @if($canAssignTasks)
         <!-- Modal: Dodaj Zadanie -->
         <div x-show="showTaskModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div @click.away="showTaskModal = false" class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">

@@ -18,6 +18,12 @@
             </div>
         </div>
 
+        @if (session('status'))
+            <div class="rounded-2xl bg-emerald-50 px-5 py-3 text-sm font-semibold text-emerald-700 ring-1 ring-emerald-100">
+                {{ session('status') }}
+            </div>
+        @endif
+
         <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 flex flex-col min-h-[400px]">
             @if($applications->isEmpty())
                 <div class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
@@ -33,7 +39,7 @@
                     @foreach($applications as $app)
                         <a href="{{ route('user.adoption-applications.show', $app) }}" class="group relative bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
                             <div class="h-32 bg-gradient-to-br from-gray-200 to-gray-300 relative overflow-hidden">
-                                <x-animal-image :animal="$app->animal" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <x-animal-image :src="$app->animal->photo_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
                                 <div class="absolute bottom-3 left-4 text-white">
                                     <h3 class="font-bold text-xl">{{ $app->animal->name }}</h3>
@@ -51,19 +57,19 @@
                                 <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                                     @if($app->status->name === 'PENDING')
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-orange-100 text-orange-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span> Oczekujący
+                                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span> {{ $app->status->label() }}
                                         </span>
                                     @elseif($app->status->name === 'APPROVED')
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Zaakceptowany
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> {{ $app->status->label() }}
                                         </span>
                                     @elseif($app->status->name === 'REJECTED')
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Odrzucony
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> {{ $app->status->label() }}
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-700">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> Anulowany
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> {{ $app->status->label() }}
                                         </span>
                                     @endif
                                     

@@ -24,7 +24,7 @@
                             <td class="px-3 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full overflow-hidden shrink-0">
-                                        <x-animal-image :animal="$animal" class="w-full h-full object-cover" />
+                                        <x-animal-image :src="$animal->photo_url" class="w-full h-full object-cover" />
                                     </div>
                                     <div>
                                         <div class="font-semibold text-slate-900">{{ $animal->name }}</div>

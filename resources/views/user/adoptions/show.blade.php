@@ -23,22 +23,22 @@
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
                             </span>
-                            <span class="text-orange-800 font-bold text-lg">Oczekujący</span>
+                            <span class="text-orange-800 font-bold text-lg">{{ $application->status->label() }}</span>
                         </div>
                     @elseif($application->status->name === 'APPROVED')
                         <div class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-green-100 border border-green-200 shadow-sm">
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                            <span class="text-green-800 font-bold text-lg">Zaakceptowany</span>
+                            <span class="text-green-800 font-bold text-lg">{{ $application->status->label() }}</span>
                         </div>
                     @elseif($application->status->name === 'REJECTED')
                         <div class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-red-100 border border-red-200 shadow-sm">
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                            <span class="text-red-800 font-bold text-lg">Odrzucony</span>
+                            <span class="text-red-800 font-bold text-lg">{{ $application->status->label() }}</span>
                         </div>
                     @else
                         <div class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-100 border border-gray-200 shadow-sm">
                             <span class="relative inline-flex rounded-full h-3 w-3 bg-gray-500"></span>
-                            <span class="text-gray-800 font-bold text-lg">Anulowany</span>
+                            <span class="text-gray-800 font-bold text-lg">{{ $application->status->label() }}</span>
                         </div>
                     @endif
                 </div>
@@ -49,16 +49,7 @@
             <!-- ANIMAL CARD -->
             <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden transform hover:-translate-y-1 transition-transform duration-300">
                 <div class="h-64 bg-gray-200 relative">
-                    @php
-                        $firstImage = $application->animal->animalImages->sortBy('sort_order')->first();
-                        $imagePath = $firstImage?->image?->file_name;
-                        $hasImage = $imagePath && file_exists(public_path('storage/' . $imagePath));
-                    @endphp
-                    @if($hasImage)
-                        <img src="{{ asset('storage/' . $imagePath) }}" class="w-full h-full object-cover">
-                    @else
-                        <img src="{{ asset('images/hero_shelter.png') }}" class="w-full h-full object-cover">
-                    @endif
+                    <img src="{{ $photoUrl }}" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent"></div>
                     <div class="absolute bottom-6 left-6 text-white">
                         <h3 class="text-3xl font-black mb-1">{{ $application->animal->name }}</h3>

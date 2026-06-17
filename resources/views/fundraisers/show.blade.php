@@ -22,7 +22,7 @@
                 </a>
             </div>
 
-            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Admin', 'Pracownik']))
+            @if($canEdit)
                 <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
                     <span class="text-sm font-semibold text-gray-700">Opcje administracyjne:</span>
                     <div class="flex items-center gap-3">
@@ -39,13 +39,6 @@
                     </div>
                 </div>
             @endif
-
-            @php
-                $percent =
-                    $fundraiser->target_amount > 0
-                        ? min(100, round(($fundraiser->collected_amount / $fundraiser->target_amount) * 100))
-                        : 0;
-            @endphp
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
@@ -73,7 +66,7 @@
                                     <h4 class="text-sm font-bold text-gray-900">Zbiórka dedykowana dla:
                                         {{ $fundraiser->animal->name }}</h4>
                                     <p class="text-xs text-gray-500 mt-0.5">Wiek: {{ $fundraiser->animal->age_months }}
-                                        miesięcy | Płeć: {{ $fundraiser->animal->genders == 0 ? 'Samiec' : 'Samica' }}
+                                        miesięcy | Płeć: {{ $fundraiser->animal->gender_label }}
                                     </p>
                                 </div>
                             </div>
@@ -101,11 +94,11 @@
 
                             <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                                 <div class="bg-orange-500 h-3 rounded-full transition-all duration-500 ease-out"
-                                    style="width: {{ $percent }}%">
+                                    style="width: {{ $fundraiser->progress_percent }}%">
                                 </div>
                             </div>
                             <div class="text-right text-xs font-bold text-orange-500 mt-1.5">
-                                {{ $percent }}% celu
+                                {{ $fundraiser->progress_percent }}% celu
                             </div>
                         </div>
 

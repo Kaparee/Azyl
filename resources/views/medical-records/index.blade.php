@@ -60,7 +60,7 @@
                                                 <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{{ $record->treatment_type }}</span>
                                             </h5>
                                             <div class="text-xs text-gray-500 mt-1 flex items-center gap-3">
-                                                <span>{{ \Carbon\Carbon::parse($record->treatment_date)->format('Y-m-d') }}</span>
+                                                <span>{{ $record->date_formatted }}</span>
                                                 <span>Lek. weterynarii</span>
                                                 <span class="font-medium text-gray-700">{{ $record->cost }} zł</span>
                                             </div>

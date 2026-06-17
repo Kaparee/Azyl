@@ -13,7 +13,9 @@ use Illuminate\Support\Str;
 
 class AnimalController extends Controller
 {
-    // lista zwierząt w panelu admina razem z prostymi licznikami do kafelków
+    /**
+     * Lista w panelu admina — liczniki statusów są tu, żeby kafelki nie robiły osobnych zapytań w widoku.
+     */
     public function index(Request $request)
     {
         $query = Animal::with(['breed.species', 'animalImages.image']);
@@ -30,6 +32,12 @@ class AnimalController extends Controller
 
         $animals = $query->paginate(10)->withQueryString();
 
+        $animals->getCollection()->transform(function (Animal $animal) {
+            $animal->setAttribute('photo_url', \App\Support\AnimalPresenter::photoUrl($animal));
+
+            return $animal;
+        });
+
         return view('admin.animals.index', [
             'animals' => $animals,
             'availableCount' => Animal::where('status', AnimalStatus::AVAILABLE)->count(),
@@ -39,6 +47,7 @@ class AnimalController extends Controller
         ]);
     }
 
+    /** Formularz dodawania — enum statusów przekazujemy z PHP, żeby Blade nie hardkodował wartości. */
     public function create()
     {
         return view('admin.animals.create', [
@@ -49,7 +58,7 @@ class AnimalController extends Controller
 
     public function store(Request $request)
     {
-        // walidacja bo nie ma sensu robić osobnej klasy
+        // Walidacja w kontrolerze — na razie bez osobnej klasy Request, żeby nie mnożyć plików.
         $data = $request->validate([
             'name' => 'required|max:255',
             'breed_id' => 'required|exists:breeds,id',
@@ -67,7 +76,7 @@ class AnimalController extends Controller
 
         unset($data['images']);
 
-        // token jest potrzebny w animals więc robimy go od razu przy dodawaniu
+        // Token QR od razu przy tworzeniu — bez niego link do profilu ze skanera by nie działał.
         do {
             $token = Str::random(16);
         } while (Animal::where('qr_token', $token)->exists());
@@ -76,7 +85,7 @@ class AnimalController extends Controller
 
         $animal = Animal::create($data);
 
-        // zdjęcia są zapisywane po kolei
+        // Zdjęcia po utworzeniu zwierzęcia — najpierw musi istnieć rekord, żeby powiązać pliki.
         if ($request->hasFile('images')) {
             $nr = 1;
 
@@ -103,6 +112,7 @@ class AnimalController extends Controller
         return redirect()->route('admin.animals.index')->with('status', 'Dodano zwierzę.');
     }
 
+    /** Edycja ładuje powiązane zdjęcia — widok potrzebuje ich do podglądu i zmiany kolejności. */
     public function edit(Animal $animal)
     {
         $animal->load('animalImages.image');
@@ -116,7 +126,7 @@ class AnimalController extends Controller
 
     public function update(Request $request, Animal $animal)
     {
-        // edycja ma prawie te same pola co dodawanie
+        // Te same pola co przy dodawaniu — jeden zestaw reguł, mniej rozjazdów między formularzami.
         $data = $request->validate([
             'name' => 'required|max:255',
             'breed_id' => 'required|exists:breeds,id',
@@ -137,6 +147,7 @@ class AnimalController extends Controller
         unset($data['images'], $data['sort_order']);
 
         if ($data['status'] != $animal->status->value) {
+            // Nie wracamy na „dostępne”, gdy są oczekujące wnioski — unikamy podwójnej adopcji.
             $pendingApplicationsCount = $animal->adoptionApplications()->where('status', \App\Enums\AdoptionStatus::PENDING)->count();
             if ($pendingApplicationsCount > 0 && $data['status'] == \App\Enums\AnimalStatus::AVAILABLE->value) {
                 return redirect()->back()->withErrors(['status' => 'Nie można zmienić na Dostępne - zwierzę ma oczekujące wnioski o adopcję.']);
@@ -145,7 +156,7 @@ class AnimalController extends Controller
 
         $animal->update($data);
 
-        // zmiana kolejności dodanych zdjęc
+        // Kolejność zdjęć z formularza — użytkownik ustawia ją ręcznie, nie po dacie uploadu.
         if ($request->sort_order) {
             foreach ($request->sort_order as $animalImageId => $order) {
                 AnimalImage::where('animal_id', $animal->id)
@@ -154,7 +165,7 @@ class AnimalController extends Controller
             }
         }
 
-        // nowe zdjęcie dopisujemy na koniec
+        // Nowe pliki dopisujemy na koniec — nie nadpisujemy istniejących zdjęć w galerii.
         if ($request->hasFile('images')) {
             $nr = AnimalImage::where('animal_id', $animal->id)->max('sort_order');
             $nr = $nr ? $nr + 1 : 1;
@@ -182,6 +193,7 @@ class AnimalController extends Controller
         return redirect()->route('admin.animals.index')->with('status', 'Zapisano zwierzę.');
     }
 
+    /** Usunięcie rekordu — relacje w bazie (zdjęcia, wnioski) obsługuje model przez cascade. */
     public function destroy(Animal $animal)
     {
         $animal->delete();

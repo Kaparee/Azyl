@@ -16,7 +16,7 @@
                     <span class="text-xs font-bold uppercase tracking-wider text-orange-600 block mb-1">Bądź na bieżąco</span>
                     <h1 class="text-3xl font-extrabold text-gray-900">Jak możesz pomóc?</h1>
                 </div>
-                @if(auth()->check() && in_array(auth()->user()->role?->name, ['Admin', 'Pracownik']))
+                @if($canCreateFundraiser)
                 <a href="{{ route('admin.fundraisers.create') }}" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold transition-colors shadow-sm">
                     + Dodaj zbiórkę
                 </a>
@@ -32,30 +32,11 @@
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach ($fundraisers as $fundraiser)
-                        @php
-                            $percent =
-                                $fundraiser->target_amount > 0
-                                    ? min(
-                                        100,
-                                        round(($fundraiser->collected_amount / $fundraiser->target_amount) * 100),
-                                    )
-                                    : 0;
-                        @endphp
-
                         <div
                             class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow duration-300">
                             <div class="h-48 bg-gray-200 relative">
-                                @php
-                                    $firstImage = $fundraiser->animal?->animalImages?->sortBy('sort_order')->first();
-                                    $imagePath = $firstImage?->image?->file_name;
-                                    $hasImage = $imagePath && file_exists(public_path('storage/'.$imagePath));
-                                @endphp
-                                @if ($hasImage)
-                                    <img src="{{ asset('storage/'.$imagePath) }}"
-                                        alt="{{ $fundraiser->title }}" class="w-full h-full object-cover">
-                                @else
-                                    <img src="{{ asset('images/hero_shelter.png') }}" alt="{{ $fundraiser->title }}" class="w-full h-full object-cover">
-                                @endif
+                                <img src="{{ $fundraiser->image_url }}"
+                                    alt="{{ $fundraiser->title }}" class="w-full h-full object-cover">
 
                                 @if ($fundraiser->animal)
                                     <span
@@ -89,12 +70,12 @@
 
                                     <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden mb-2">
                                         <div class="bg-orange-500 h-2 rounded-full transition-all duration-500 ease-out"
-                                            style="width: {{ $percent }}%">
+                                            style="width: {{ $fundraiser->progress_percent }}%">
                                         </div>
                                     </div>
 
                                     <div class="flex justify-between items-center mt-3">
-                                        <span class="text-xs font-bold text-orange-500">{{ $percent }}%
+                                        <span class="text-xs font-bold text-orange-500">{{ $fundraiser->progress_percent }}%
                                             celu</span>
 
                                         <a href="{{ route('fundraisers.show', $fundraiser) }}"

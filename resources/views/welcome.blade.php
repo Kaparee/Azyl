@@ -3,16 +3,6 @@
 @section('title', 'Schronisko Azyl - Strona Główna')
 
 @section('content')
-    @php
-        $recentAnimals = \App\Models\Animal::with(['breed.species', 'animalImages.image'])
-            ->where('status', 0) // AVAILABLE
-            ->withCount('recentClicks')
-            ->orderByDesc('recent_clicks_count')
-            ->take(5)
-            ->get();
-        $recentFundraisers = \App\Models\Fundraiser::with('animal')->where('status', 1)->latest()->take(2)->get();
-        $recentNews = \App\Models\News::where('is_published', true)->latest('published_at')->take(1)->get();
-    @endphp
     <div class="relative bg-gray-900 min-h-[600px] flex flex-col justify-center items-center text-center">
         <div class="absolute inset-0 z-0">
             <img src="{{ asset('images/hero_shelter.png') }}" alt="Pies ze schroniska" class="w-full h-full object-cover opacity-60">
@@ -95,7 +85,7 @@
             @foreach($recentAnimals as $index => $animal)
             <a href="{{ route('animals.show', $animal) }}" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group flex flex-col">
                 <div class="relative h-48 bg-gray-200 shrink-0">
-                    <x-animal-image :animal="$animal" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                    <x-animal-image :src="$animal->photo_url" :alt="$animal->name" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                     @if($index == 0)
                         <div class="absolute top-3 left-3 bg-azyl-orange text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">Nowy</div>
                     @endif
@@ -172,15 +162,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             @foreach($recentFundraisers as $fundraiser)
-            @php
-                $firstAnimalImage = $fundraiser->animal?->animalImages?->sortBy('sort_order')->first();
-                $imagePath = $firstAnimalImage?->image?->file_name;
-                $hasImage = $imagePath && file_exists(public_path('storage/' . $imagePath));
-                $fundraiserImg = $hasImage ? asset('storage/' . $imagePath) : asset('images/hero_shelter.png');
-            @endphp
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition">
                 <div class="h-48 bg-gray-200">
-                    <img src="{{ $fundraiserImg }}" class="w-full h-full object-cover">
+                    <img src="{{ $fundraiser->image_url }}" alt="{{ $fundraiser->title }}" class="w-full h-full object-cover">
                 </div>
                 <div class="p-5 flex flex-col flex-grow">
                     <h3 class="font-bold text-gray-900 text-lg mb-3">{{ $fundraiser->title }}</h3>
@@ -191,12 +175,9 @@
                             <span>Cel: {{ $fundraiser->target_amount }} zł</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-2 mb-2">
-                            @php
-                                $percent = $fundraiser->target_amount > 0 ? min(100, ($fundraiser->collected_amount / $fundraiser->target_amount) * 100) : 0;
-                            @endphp
-                            <div class="bg-azyl-orange h-2 rounded-full" style="width: {{ $percent }}%"></div>
+                            <div class="bg-azyl-orange h-2 rounded-full" style="width: {{ $fundraiser->progress_percent }}%"></div>
                         </div>
-                        <p class="text-xs text-gray-500 mb-4">{{ round($percent) }}% celu</p>
+                        <p class="text-xs text-gray-500 mb-4">{{ $fundraiser->progress_percent }}% celu</p>
                         
                         <a href="{{ route('fundraisers.show', $fundraiser) }}" class="text-azyl-orange font-medium hover:underline text-sm inline-flex items-center">
                             Dowiedz się więcej <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>

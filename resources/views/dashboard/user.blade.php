@@ -58,7 +58,7 @@
                         <div class="border border-gray-100 rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-shadow">
                             <div class="flex items-center gap-4">
                                 <div class="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden shrink-0">
-                                    <x-animal-image :animal="$app->animal" class="w-full h-full object-cover" />
+                                    <x-animal-image :src="$app->animal->photo_url" class="w-full h-full object-cover" />
                                 </div>
                                 <div>
                                     <h4 class="font-bold text-gray-900">{{ $app->animal->name }}</h4>

@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\VolunteerTask;
+use App\Support\DatePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class VolunteerTaskController extends Controller
 {
+    /**
+     * Lista zadań — admin/pracownik widzi wszystkie, wolontariusz tylko swoje przypisane.
+     */
     public function index(Request $request)
     {
         $userId = Auth::id();
@@ -28,11 +32,15 @@ class VolunteerTaskController extends Controller
             });
         }
 
+        // Klonujemy query — każda statystyka ma własne filtry bez psucia bazowego zapytania.
         $completed = (clone $baseQuery)->where('status', 3)->count();
         $total = (clone $baseQuery)->count();
-        $total = $total > 0 ? $total : 1;
+        $total = $total > 0 ? $total : 1; // unikamy dzielenia przez zero w procentach
 
         $urgentTasks = (clone $baseQuery)->where('is_urgent', true)->where('status', '!=', 3)->orderBy('time')->take(2)->get();
+        $urgentTasks->each(function ($task) {
+            $task->setAttribute('time_formatted', DatePresenter::formatTime($task->time));
+        });
 
         $tasksQuery = clone $baseQuery;
         if ($request->has('status') && $request->status !== null && $request->status !== '') {
@@ -43,6 +51,9 @@ class VolunteerTaskController extends Controller
             ->orderBy('status', 'asc')
             ->orderBy('time', 'asc')
             ->get();
+        $tasks->each(function ($task) {
+            $task->setAttribute('time_formatted', DatePresenter::formatTime($task->time));
+        });
 
         $statusCounts = (clone $baseQuery)->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
 
@@ -53,9 +64,13 @@ class VolunteerTaskController extends Controller
             $volunteers = User::where('role_id', 4)->get();
         }
 
-        return view('volunteer-tasks.index', compact('tasks', 'urgentTasks', 'completed', 'total', 'statusCounts', 'volunteers', 'allTasks'));
+        $todayFormatted = DatePresenter::todayPolish();
+        $canAssignTasks = in_array($userRole, [1, 2, 3]);
+
+        return view('volunteer-tasks.index', compact('tasks', 'urgentTasks', 'completed', 'total', 'statusCounts', 'volunteers', 'allTasks', 'todayFormatted', 'canAssignTasks'));
     }
 
+    /** Nowe zadanie domyślnie „do zrobienia” na dziś — formularz nie pyta o datę ani status. */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -75,6 +90,9 @@ class VolunteerTaskController extends Controller
         return back()->with('success', 'Zadanie zostało przypisane wolontariuszowi.');
     }
 
+    /**
+     * Dwa tryby: pełna edycja (formularz) albo szybka zmiana statusu z listy.
+     */
     public function update(Request $request, VolunteerTask $task)
     {
         if ($request->has('title')) {
@@ -101,6 +119,7 @@ class VolunteerTaskController extends Controller
         return back()->with('success', 'Zaktualizowano status zadania.');
     }
 
+    /** Usunięcie z listy — historia zadań nie jest archiwizowana, bo to panel operacyjny, nie raport. */
     public function destroy(VolunteerTask $task)
     {
         $task->delete();

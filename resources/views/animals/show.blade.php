@@ -3,42 +3,6 @@
 @section('title', $animal->name.' - Azyl')
 
 @section('content')
-    @php
-        $photos = $animal->animalImages
-            ->sortBy('sort_order')
-            ->filter(fn ($photo) => $photo->image?->file_name)
-            ->values();
-
-        $photoUrls = $photos
-            ->map(fn ($photo) => asset('storage/'.$photo->image->file_name))
-            ->values()
-            ->all();
-
-        $speciesName = $animal->breed?->species?->name ?? null;
-        $placeholderUrl = asset(match ($speciesName) {
-            'Pies' => 'images/placeholder-dog.png',
-            'Kot' => 'images/placeholder-cat.png',
-            default => 'images/hero_shelter.png',
-        });
-
-        $qrLink = route('animals.qr', $animal->qr_token);
-        $statusValue = $animal->status?->value ?? $animal->status;
-        $statusLabel = match ($statusValue) {
-            0 => 'Do adopcji',
-            1 => 'W trakcie',
-            2 => 'Adoptowany',
-            3 => 'Niedostępny',
-            default => 'Brak statusu',
-        };
-        $statusClass = match ($statusValue) {
-            0 => 'bg-emerald-50 text-emerald-700 ring-emerald-100',
-            1 => 'bg-amber-50 text-amber-700 ring-amber-100',
-            2 => 'bg-sky-50 text-sky-700 ring-sky-100',
-            3 => 'bg-slate-100 text-slate-600 ring-slate-200',
-            default => 'bg-slate-100 text-slate-600 ring-slate-200',
-        };
-    @endphp
-
     <div class="bg-[#fff7f1] px-6 py-8 text-slate-900">
         <div class="mx-auto max-w-7xl">
             <div class="mb-5">
@@ -70,7 +34,7 @@
                                 onerror="this.onerror=null; this.src='{{ $placeholderUrl }}';"
                             >
                         @else
-                            <x-animal-image :animal="$animal" class="absolute inset-0 h-full w-full object-cover" />
+                            <x-animal-image :src="$placeholderUrl" :alt="$animal->name" class="absolute inset-0 h-full w-full object-cover" />
                         @endif
                     </div>
 
@@ -114,7 +78,7 @@
                             </div>
                             <div class="rounded-2xl bg-orange-50 px-4 py-4">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Płeć</p>
-                                <p class="mt-1 font-black">{{ $animal->genders == 0 ? 'Samiec' : 'Samica' }}</p>
+                                <p class="mt-1 font-black">{{ $genderLabel }}</p>
                             </div>
                             <div class="rounded-2xl bg-orange-50 px-4 py-4">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Wzrost</p>
@@ -122,7 +86,7 @@
                             </div>
                             <div class="rounded-2xl bg-orange-50 px-4 py-4">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Wejścia</p>
-                                <p class="mt-1 font-black">{{ $animal->recent_clicks_count ?? $animal->recentClicks()->count() }}</p>
+                                <p class="mt-1 font-black">{{ $recentClicksCount }}</p>
                             </div>
                         </div>
 
@@ -157,6 +121,59 @@
                                 Zaloguj się, aby wesprzeć zbiórkę
                             </a>
                         @endauth
+                    </div>
+
+                    <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-orange-100">
+                        <p class="font-bold">Adopcja</p>
+
+                        @if ($adoptionUi === 'adopted')
+                            <p class="mt-3 text-sm leading-6 text-slate-600">To zwierzę zostało już adoptowane i nie przyjmuje nowych wniosków.</p>
+                        @elseif ($adoptionUi === 'unavailable')
+                            <p class="mt-3 text-sm leading-6 text-slate-600">To zwierzę nie jest obecnie dostępne do adopcji.</p>
+                        @elseif ($adoptionUi === 'guest')
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Zaloguj się, aby złożyć wniosek adopcyjny.</p>
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="mt-4 block rounded-2xl bg-orange-500 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-orange-600">
+                                Zaloguj się, aby adoptować
+                            </a>
+                        @elseif ($adoptionUi === 'form')
+                            <form method="POST" action="{{ route('adoption-applications.store') }}" class="mt-4 space-y-4">
+                                @csrf
+                                <input type="hidden" name="animal_id" value="{{ $animal->id }}">
+
+                                <div>
+                                    <label for="message" class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Wiadomość (opcjonalnie)</label>
+                                    <textarea
+                                        id="message"
+                                        name="message"
+                                        rows="4"
+                                        class="mt-2 w-full rounded-2xl border-slate-200 text-sm focus:border-orange-500 focus:ring-orange-200"
+                                        placeholder="Napisz kilka słów o sobie i warunkach, w jakich zamieszka zwierzę..."
+                                    >{{ old('message') }}</textarea>
+                                    @error('message')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    @error('animal_id')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <button type="submit" class="w-full rounded-2xl bg-orange-500 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-orange-600">
+                                    Złóż wniosek adopcyjny
+                                </button>
+                            </form>
+                        @elseif ($adoptionUi === 'pending')
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Twój wniosek adopcyjny oczekuje na rozpatrzenie przez schronisko.</p>
+                            <a href="{{ route('user.adoption-applications.index') }}" class="mt-4 block rounded-2xl bg-slate-900 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-slate-800">
+                                Zobacz moje wnioski
+                            </a>
+                        @elseif ($adoptionUi === 'approved')
+                            <p class="mt-3 text-sm leading-6 text-slate-600">Twój wniosek adopcyjny został zaakceptowany.</p>
+                            <a href="{{ route('user.adoption-applications.index') }}" class="mt-4 block rounded-2xl bg-slate-900 px-5 py-3 text-center text-sm font-bold text-white shadow-sm hover:bg-slate-800">
+                                Zobacz moje wnioski
+                            </a>
+                        @else
+                            <p class="mt-3 text-sm leading-6 text-slate-600">To zwierzę nie przyjmuje obecnie nowych wniosków adopcyjnych.</p>
+                        @endif
                     </div>
 
                     <div class="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-orange-100">
@@ -222,12 +239,12 @@
                                 <p class="mt-1 text-sm text-slate-500">Zwierzę zostało przyjęte do schroniska Azyl i wpisane do katalogu.</p>
                             </div>
 
-                            @forelse ($animal->medicalRecords->sortBy('treatment_date')->take(3) as $record)
+                            @forelse ($medicalHistory as $record)
                                 <div class="relative">
                                     <span class="absolute -left-10 flex h-8 w-8 items-center justify-center rounded-full bg-orange-50 text-orange-500 ring-1 ring-orange-200">✓</span>
-                                    <p class="text-xs text-slate-400">{{ $record->treatment_date ? \Carbon\Carbon::parse($record->treatment_date)->format('Y-m-d') : 'brak daty' }}</p>
-                                    <h3 class="font-black">{{ $record->treatment_type }}</h3>
-                                    <p class="mt-1 text-sm text-slate-500">{{ $record->description }}</p>
+                                    <p class="text-xs text-slate-400">{{ $record['date_formatted'] }}</p>
+                                    <h3 class="font-black">{{ $record['treatment_type'] }}</h3>
+                                    <p class="mt-1 text-sm text-slate-500">{{ $record['description'] }}</p>
                                 </div>
                             @empty
                                 <div class="relative">
