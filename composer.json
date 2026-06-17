@@ -5,23 +5,23 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
-        "barryvdh/laravel-dompdf": "^3.1",
-        "darkaonline/l5-swagger": "^11.1",
-        "laravel/framework": "^11.0",
-        "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^2.9"
+        "php": "^8.3",
+        "barryvdh/laravel-dompdf": "*",
+        "darkaonline/l5-swagger": "*",
+        "laravel/framework": "^13.0",
+        "laravel/sanctum": "*",
+        "laravel/tinker": "*"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.23",
-        "laravel-lang/common": "^6.8",
-        "laravel/breeze": "^2.4",
-        "laravel/pint": "^1.13",
-        "laravel/sail": "^1.26",
-        "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.0",
-        "phpunit/phpunit": "^10.5",
-        "spatie/laravel-ignition": "^2.4"
+        "fakerphp/faker": "*",
+        "laravel-lang/common": "*",
+        "laravel/breeze": "*",
+        "laravel/pint": "*",
+        "laravel/sail": "*",
+        "mockery/mockery": "*",
+        "nunomaduro/collision": "*",
+        "phpunit/phpunit": "*",
+        "spatie/laravel-ignition": "*"
     },
     "autoload": {
         "psr-4": {

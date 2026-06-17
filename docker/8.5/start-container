@@ -22,5 +22,81 @@ if [ $# -gt 0 ]; then
         exec gosu $WWWUSER "$@"
     fi
 else
+    # ============================================================
+    # AUTO-SETUP: Uruchamiane tylko przy pierwszym starcie
+    # ============================================================
+
+    SETUP_MARKER="/var/www/html/storage/.setup-done"
+
+    if [ ! -f "$SETUP_MARKER" ]; then
+        echo ""
+        echo "============================================"
+        echo "  AZYL - Automatyczna konfiguracja projektu"
+        echo "============================================"
+        echo ""
+
+        # 1. Kopiuj .env jeśli nie istnieje
+        if [ ! -f /var/www/html/.env ]; then
+            echo "[1/7] Tworzenie pliku .env..."
+            cp /var/www/html/.env.example /var/www/html/.env
+        else
+            echo "[1/7] Plik .env już istnieje - pomijam."
+        fi
+
+        # 2. Instalacja zależności PHP
+        echo "[2/7] Instalacja zależności Composer..."
+        cd /var/www/html
+        composer install --no-interaction --optimize-autoloader --no-progress 2>&1
+
+        # 3. Generuj klucz aplikacji (jeśli brak)
+        if grep -q "^APP_KEY=$" /var/www/html/.env 2>/dev/null; then
+            echo "[3/7] Generowanie klucza aplikacji..."
+            php artisan key:generate --force
+        else
+            echo "[3/7] Klucz aplikacji już istnieje - pomijam."
+        fi
+
+        # 4. Instalacja zależności NPM + budowanie assetów
+        echo "[4/7] Instalacja npm i budowanie assetów (Vite)..."
+        npm install --no-progress 2>&1
+        npm run build 2>&1
+
+        # 5. Czekaj na MySQL
+        echo "[5/7] Czekanie na gotowość MySQL..."
+        RETRIES=30
+        until mysql -h"${DB_HOST:-mysql}" -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD}" -e "SELECT 1" "${DB_DATABASE:-azyl}" > /dev/null 2>&1; do
+            RETRIES=$((RETRIES - 1))
+            if [ $RETRIES -le 0 ]; then
+                echo "  MySQL nie odpowiada po 30 próbach - próbuję kontynuować..."
+                break
+            fi
+            echo "  Czekam na MySQL... (pozostało $RETRIES prób)"
+            sleep 2
+        done
+        echo "  MySQL gotowy!"
+
+        # 6. Migracje + seedy
+        echo "[6/7] Migracja bazy danych i seedowanie..."
+        php artisan migrate --force --seed 2>&1
+
+        # 7. Storage link
+        echo "[7/7] Tworzenie dowiązania symbolicznego storage..."
+        php artisan storage:link --force 2>&1
+
+        # Ustaw uprawnienia
+        chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+        chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache
+
+        # Oznacz setup jako wykonany
+        touch "$SETUP_MARKER"
+
+        echo ""
+        echo "============================================"
+        echo "  AZYL - Konfiguracja zakończona!"
+        echo "  Aplikacja dostępna pod: http://localhost"
+        echo "============================================"
+        echo ""
+    fi
+
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 fi

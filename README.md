@@ -5,7 +5,7 @@
 "Azyl" to kompleksowy system klasy CMS/ERP wspierający codzienne funkcjonowanie schronisk dla zwierząt. Aplikacja ma na celu cyfryzację zasobów placówki, automatyzację obiegu wniosków adopcyjnych oraz zarządzanie zbiórkami celowymi. System integruje zarządzanie bazą zwierząt z modułami logistycznymi (wolontariat, dokumentacja medyczna) i finansowymi (fundraising), kładąc nacisk na przejrzystość procesów.
 
 ### 1.2 Użyte technologie
-- **Język i Framework:** PHP 8.2, Laravel 11
+- **Język i Framework:** PHP 8.5, Laravel 13
 - **Baza danych:** MySQL (uruchamiana za pomocą Docker / Laravel Sail)
 - **Frontend / UI:** Tailwind CSS, Blade Templates, Alpine.js
 - **Autoryzacja:** Laravel Breeze (architektura MVC, Middleware)
@@ -104,12 +104,12 @@ Aplikacja "Azyl" wykorzystuje wbudowane mechanizmy Docker-a (Laravel Sail) dla n
    ```
 2. Zainstaluj zależności kompozytora:
    ```bash
-   docker run --rm \
-     -u "$(id -u):$(id -g)" \
-     -v "$(pwd):/var/www/html" \
-     -w /var/www/html \
-     laravelsail/php82-composer:latest \
-     composer install --ignore-platform-reqs
+    docker run --rm \
+      -u "$(id -u):$(id -g)" \
+      -v "$(pwd):/var/www/html" \
+      -w /var/www/html \
+      laravelsail/php85-composer:latest \
+      composer install --ignore-platform-reqs
    ```
 3. Skopiuj plik środowiskowy i wygeneruj klucz aplikacji:
    ```bash
