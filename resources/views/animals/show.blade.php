@@ -5,7 +5,7 @@
 @section('content')
     @php
         $photos = $animal->animalImages
-            ->sortBy('sort_order')
+            ->sortBy('id')
             ->filter(fn ($photo) => $photo->image?->file_name)
             ->values();
 
@@ -54,7 +54,7 @@
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_420px] lg:items-start">
                 <section
                     @if (count($photoUrls) > 1)
-                        x-data="{ active: 0, photos: @json($photoUrls) }"
+                        x-data='{ active: 0, photos: @json($photoUrls) }'
                     @endif
                     class="w-full self-start overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-orange-100"
                 >
@@ -69,6 +69,14 @@
                                 class="absolute inset-0 h-full w-full object-cover"
                                 onerror="this.onerror=null; this.src='{{ $placeholderUrl }}';"
                             >
+                            @if (count($photoUrls) > 1)
+                                <button type="button" @click="active = active === 0 ? photos.length - 1 : active - 1" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2.5 rounded-full hover:bg-black/70 transition backdrop-blur-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                                </button>
+                                <button type="button" @click="active = active === photos.length - 1 ? 0 : active + 1" class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 text-white p-2.5 rounded-full hover:bg-black/70 transition backdrop-blur-sm">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                            @endif
                         @else
                             <x-animal-image :animal="$animal" class="absolute inset-0 h-full w-full object-cover" />
                         @endif
@@ -196,14 +204,14 @@
                         <h2 class="text-2xl font-black">Osobowość</h2>
                         <p class="mt-3 leading-7 text-slate-600">{{ $animal->description }}</p>
 
-                        <h3 class="mt-6 font-black">Cechy charakteru</h3>
-                        <div class="mt-3 flex flex-wrap gap-3">
-                            <span class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600">Przyjazny dzieciom</span>
-                            <span class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600">Zna komendy</span>
-                            <span class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600">Aktywny</span>
-                            <span class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600">Lubi opiekę</span>
-                            <span class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600">Nie gryzie</span>
-                        </div>
+                        @if ($animal->traits && count($animal->traits) > 0)
+                            <h3 class="mt-6 font-black">Cechy charakteru</h3>
+                            <div class="mt-3 flex flex-wrap gap-3">
+                                @foreach($animal->traits as $trait)
+                                    <span class="rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-600">{{ $trait }}</span>
+                                @endforeach
+                            </div>
+                        @endif
 
                         @if ($animal->medical_info)
                             <div class="mt-6 rounded-2xl bg-orange-50 p-5">
@@ -222,7 +230,7 @@
                                 <p class="mt-1 text-sm text-slate-500">Zwierzę zostało przyjęte do schroniska Azyl i wpisane do katalogu.</p>
                             </div>
 
-                            @forelse ($animal->medicalRecords->sortBy('treatment_date')->take(3) as $record)
+                            @forelse ($animal->medicalRecords->sortBy('treatment_date') as $record)
                                 <div class="relative">
                                     <span class="absolute -left-10 flex h-8 w-8 items-center justify-center rounded-full bg-orange-50 text-orange-500 ring-1 ring-orange-200">✓</span>
                                     <p class="text-xs text-slate-400">{{ $record->treatment_date ? \Carbon\Carbon::parse($record->treatment_date)->format('Y-m-d') : 'brak daty' }}</p>
@@ -249,51 +257,68 @@
 
                     <div x-show="tab === 'requirements'" style="display: none;">
                         <div class="grid gap-4 md:grid-cols-3">
-                            <div class="rounded-2xl bg-orange-50 p-4">
-                                <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Warunki mieszkaniowe</p>
-                                <p class="mt-1 font-semibold">Dom lub mieszkanie z bezpieczną przestrzenią.</p>
-                            </div>
-                            <div class="rounded-2xl bg-orange-50 p-4">
-                                <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Wymagane doświadczenie</p>
-                                <p class="mt-1 font-semibold">Podstawowa opieka i regularne wizyty kontrolne.</p>
-                            </div>
-                            <div class="rounded-2xl bg-orange-50 p-4">
-                                <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Czas poświęcony dziennie</p>
-                                <p class="mt-1 font-semibold">Minimum 2 godziny dziennie.</p>
-                            </div>
+                            @if ($animal->housing_conditions)
+                                <div class="rounded-2xl bg-orange-50 p-4">
+                                    <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Warunki mieszkaniowe</p>
+                                    <p class="mt-1 font-semibold">{{ $animal->housing_conditions }}</p>
+                                </div>
+                            @endif
+                            @if ($animal->experience_required)
+                                <div class="rounded-2xl bg-orange-50 p-4">
+                                    <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Wymagane doświadczenie</p>
+                                    <p class="mt-1 font-semibold">{{ $animal->experience_required }}</p>
+                                </div>
+                            @endif
+                            @if ($animal->daily_time_required)
+                                <div class="rounded-2xl bg-orange-50 p-4">
+                                    <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Czas poświęcony dziennie</p>
+                                    <p class="mt-1 font-semibold">{{ $animal->daily_time_required }}</p>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="mt-5 grid gap-3 md:grid-cols-2">
-                            <div class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                            <div class="flex items-center justify-between rounded-2xl {{ $animal->is_child_friendly ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500' }} px-4 py-3 text-sm font-semibold">
                                 <span>Przyjazny dzieciom</span>
-                                <span>✓</span>
+                                <span>{{ $animal->is_child_friendly ? '✓' : '-' }}</span>
                             </div>
-                            <div class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                            <div class="flex items-center justify-between rounded-2xl {{ $animal->accepts_cats ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500' }} px-4 py-3 text-sm font-semibold">
                                 <span>Akceptuje koty</span>
-                                <span>✓</span>
+                                <span>{{ $animal->accepts_cats ? '✓' : '-' }}</span>
                             </div>
-                            <div class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-                                <span>Akceptuje psy</span>
-                                <span>✓</span>
+                            <div class="flex items-center justify-between rounded-2xl {{ $animal->accepts_dogs ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500' }} px-4 py-3 text-sm font-semibold">
+                                <span>Akceptuje inne psy</span>
+                                <span>{{ $animal->accepts_dogs ? '✓' : '-' }}</span>
                             </div>
-                            <div class="flex items-center justify-between rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
-                                <span>Wymaga odpowiedzialnego opiekuna</span>
-                                <span>!</span>
-                            </div>
+                            @if ($animal->requires_responsible_caregiver)
+                                <div class="flex items-center justify-between rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+                                    <span>Wymaga doświadczonego opiekuna</span>
+                                    <span>!</span>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
                     <div x-show="tab === 'contact'" style="display: none;">
                         <div class="rounded-2xl bg-orange-50 p-5">
-                            <p class="font-black">Opiekun: Anna Kowalska</p>
-                            <p class="mt-2 text-sm text-slate-600">tel. +48 22 123 45 67</p>
-                            <p class="text-sm text-slate-600">kontakt@azyl.pl</p>
+                            <p class="font-black">Opiekun: {{ $animal->caregiver->name ?? 'Brak przypisanego opiekuna' }}</p>
+                            @if ($animal->contact_phone)
+                                <p class="mt-2 text-sm text-slate-600">tel. {{ $animal->contact_phone }}</p>
+                            @endif
+                            @if ($animal->caregiver)
+                                <p class="text-sm text-slate-600">{{ $animal->caregiver->email }}</p>
+                            @endif
                         </div>
 
-                        <p class="mt-4 text-sm text-slate-500">Godziny odwiedzin: Pon-Pt 10:00-17:00, Sob-Nd 10:00-15:00</p>
-                        <a href="mailto:kontakt@azyl.pl" class="mt-5 inline-flex rounded-2xl bg-orange-500 px-5 py-3 text-sm font-bold text-white hover:bg-orange-600">
-                            Umów wizytę
-                        </a>
+                        @if ($animal->visiting_hours)
+                            <p class="mt-4 text-sm text-slate-500">Godziny odwiedzin: {{ $animal->visiting_hours }}</p>
+                        @endif
+                        
+                        @if ($animal->caregiver)
+                            <a href="mailto:{{ $animal->caregiver->email }}" class="mt-5 inline-flex rounded-2xl bg-orange-500 px-5 py-3 text-sm font-bold text-white hover:bg-orange-600">
+                                Umów wizytę
+                            </a>
+                        @endif
                     </div>
                 </div>
             </section>

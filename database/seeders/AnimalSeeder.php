@@ -70,6 +70,10 @@ class AnimalSeeder extends Seeder
             'Dobrze znosi kontakt z psami, ostrożny wobec obcych.',
         ];
 
+        $caregiverIds = \App\Models\User::whereHas('role', function ($q) {
+            $q->whereIn('name', ['Pracownik', 'Wolontariusz']);
+        })->pluck('id')->toArray();
+
         foreach (range(0, 49) as $i) {
             $randomDate = $faker->dateTimeBetween('-12 months', 'now');
             $breed = $breeds[array_rand($breeds)];
@@ -106,6 +110,8 @@ class AnimalSeeder extends Seeder
                 ])
             );
 
+            $animalTraits = $faker->randomElements(['Przyjazny dzieciom', 'Zna komendy', 'Aktywny', 'Lubi opiekę', 'Nie gryzie', 'Wymaga socjalizacji', 'Spokojny', 'Płochliwy'], $faker->numberBetween(1, 4));
+
             Animal::create([
                 'name' => $name,
                 'breed_id' => $breed->id,
@@ -118,6 +124,20 @@ class AnimalSeeder extends Seeder
                 'status' => $status,
                 'qr_token' => Str::random(10),
                 'arrival_date' => $randomDate,
+                
+                // Nowe pola
+                'traits' => $animalTraits,
+                'housing_conditions' => $faker->randomElement(['Dom z ogrodem', 'Mieszkanie z balkonem', 'Dowolne', 'Dom na wsi']),
+                'experience_required' => $faker->randomElement(['Podstawowe', 'Wymagane doświadczenie', 'Dla początkujących', 'Zaawansowane']),
+                'daily_time_required' => $faker->randomElement(['Minimum 1 godzina', 'Minimum 2 godziny', 'Częste spacery', 'Niewielkie']),
+                'is_child_friendly' => $faker->boolean(70),
+                'accepts_cats' => $faker->boolean(50),
+                'accepts_dogs' => $faker->boolean(60),
+                'requires_responsible_caregiver' => $faker->boolean(30),
+                'caregiver_id' => !empty($caregiverIds) ? $faker->randomElement($caregiverIds) : null,
+                'contact_phone' => $faker->phoneNumber(),
+                'visiting_hours' => 'Pon-Pt 10:00-17:00, Sob 10:00-15:00',
+                
                 'created_at' => $randomDate,
                 'updated_at' => $randomDate,
             ]);

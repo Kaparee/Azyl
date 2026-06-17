@@ -10,6 +10,7 @@ use App\Http\Controllers\AnimalLikeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\FundraiserController;
+use App\Http\Controllers\PublicNewsController;
 use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -36,6 +37,9 @@ Route::get('/kontakt', function () {
 
 Route::get('/fundraisers', [FundraiserController::class, 'index'])->name('fundraisers.index');
 Route::get('/fundraisers/{fundraiser}', [FundraiserController::class, 'show'])->name('fundraisers.show');
+
+Route::get('/aktualnosci', [PublicNewsController::class, 'index'])->name('news.index');
+Route::get('/aktualnosci/{news}', [PublicNewsController::class, 'show'])->name('news.show');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -88,6 +92,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/adoption-applications', [AdoptionApplicationController::class, 'index'])->name('admin.adoption-applications.index');
         Route::get('/admin/adoption-applications/{application}', [AdoptionApplicationController::class, 'show'])->name('admin.adoption-applications.show');
         Route::patch('/admin/adoption-applications/{application}', [AdoptionApplicationController::class, 'update'])->name('admin.adoption-applications.update');
+        Route::delete('/admin/adoption-applications/{application}', [AdoptionApplicationController::class, 'adminDestroy'])->name('admin.adoption-applications.destroy');
 
         Route::get('/admin/fundraisers/create', [FundraiserController::class, 'create'])->name('admin.fundraisers.create');
         Route::post('/admin/fundraisers', [FundraiserController::class, 'store'])->name('admin.fundraisers.store');

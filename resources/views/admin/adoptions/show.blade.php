@@ -105,40 +105,45 @@
                     </p>
                 </div>
                 
-                @if ($application->status->name === 'PENDING')
                 <div class="mt-auto bg-gray-50 border border-gray-100 rounded-2xl p-5">
                     <h4 class="font-bold text-gray-900 text-sm mb-3">Akcje administratora</h4>
-                    <div class="flex items-center gap-3">
-                        <form action="{{ route('admin.adoption-applications.update', $application) }}" method="POST" class="flex-1">
-                            @csrf
-                            @method('PATCH')
-                            <input type="hidden" name="status" value="1">
-                            <button type="submit" onclick="return confirm('Czy na pewno chcesz zaakceptować ten wniosek? To zmieni status zwierzęcia na Zaadoptowane.')" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                Akceptuj wniosek
-                            </button>
-                        </form>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center gap-3">
+                            @if ($application->status->name !== 'APPROVED')
+                            <form action="{{ route('admin.adoption-applications.update', $application) }}" method="POST" class="flex-1">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="status" value="1">
+                                <button type="submit" onclick="return confirm('Czy na pewno chcesz zaakceptować ten wniosek? To zmieni status zwierzęcia na Zaadoptowane.')" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Akceptuj wniosek
+                                </button>
+                            </form>
+                            @endif
 
-                        <form action="{{ route('admin.adoption-applications.update', $application) }}" method="POST" class="flex-1">
+                            @if ($application->status->name !== 'REJECTED')
+                            <form action="{{ route('admin.adoption-applications.update', $application) }}" method="POST" class="flex-1">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="status" value="2">
+                                <button type="submit" onclick="return confirm('Czy na pewno chcesz odrzucić ten wniosek?')" class="w-full py-3 bg-orange-100 hover:bg-orange-200 text-orange-700 font-bold text-sm rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    Odrzuć wniosek
+                                </button>
+                            </form>
+                            @endif
+                        </div>
+                        
+                        <form action="{{ route('admin.adoption-applications.destroy', $application) }}" method="POST" class="w-full">
                             @csrf
-                            @method('PATCH')
-                            <input type="hidden" name="status" value="2">
-                            <button type="submit" onclick="return confirm('Czy na pewno chcesz odrzucić ten wniosek?')" class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                Odrzuć wniosek
+                            @method('DELETE')
+                            <button type="submit" onclick="return confirm('Czy na pewno chcesz bezpowrotnie usunąć ten wniosek?')" class="w-full py-3 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-sm rounded-xl transition-colors shadow-sm flex justify-center items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                Usuń wniosek na zawsze
                             </button>
                         </form>
                     </div>
                 </div>
-                @else
-                <div class="mt-auto bg-gray-50 border border-gray-100 rounded-2xl p-5 flex items-start gap-4">
-                    <svg class="w-6 h-6 text-gray-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <div>
-                        <h4 class="font-bold text-gray-700 text-sm mb-1">Brak dostępnych akcji</h4>
-                        <p class="text-sm text-gray-500">Ten wniosek został już rozpatrzony i jego status nie może zostać zmieniony z poziomu tego widoku.</p>
-                    </div>
-                </div>
-                @endif
             </div>
         </div>
 

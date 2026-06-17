@@ -14,14 +14,27 @@ class Animal extends Model
         'name', 'breed_id', 'age_months', 'genders', 'height', 'color',
         'description', 'medical_info', 'adoption_fee', 'status',
         'qr_token', 'arrival_date',
+        'traits', 'housing_conditions', 'experience_required', 'daily_time_required',
+        'is_child_friendly', 'accepts_cats', 'accepts_dogs', 'requires_responsible_caregiver',
+        'caregiver_id', 'contact_phone', 'visiting_hours'
     ];
 
     protected function casts(): array
     {
         return [
             'status' => AnimalStatus::class,
-            'arrival_date' => 'datetime',
+            'arrival_date' => 'date',
+            'traits' => 'array',
+            'is_child_friendly' => 'boolean',
+            'accepts_cats' => 'boolean',
+            'accepts_dogs' => 'boolean',
+            'requires_responsible_caregiver' => 'boolean',
         ];
+    }
+
+    public function caregiver()
+    {
+        return $this->belongsTo(User::class, 'caregiver_id');
     }
 
     public function breed()

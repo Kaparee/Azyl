@@ -79,35 +79,43 @@
                                                         Szczegóły
                                                     </a>
 
-                                                    @if ($app->status->name === 'PENDING')
+                                                    @if ($app->status->name !== 'APPROVED')
                                                         <form
                                                             action="{{ route('admin.adoption-applications.update', $app) }}"
                                                             method="POST">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="1">
-                                                            <button type="submit"
+                                                            <button type="submit" onclick="return confirm('Akceptować wniosek?')"
                                                                 class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg transition-colors">
                                                                 Akceptuj
                                                             </button>
                                                         </form>
+                                                    @endif
 
+                                                    @if ($app->status->name !== 'REJECTED')
                                                         <form
                                                             action="{{ route('admin.adoption-applications.update', $app) }}"
                                                             method="POST">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="2">
-                                                            <button type="submit"
-                                                                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-medium text-xs rounded-lg transition-colors">
+                                                            <button type="submit" onclick="return confirm('Odrzucić wniosek?')"
+                                                                class="px-3 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium text-xs rounded-lg transition-colors">
                                                                 Odrzuć
                                                             </button>
                                                         </form>
                                                     @endif
+                                                    
+                                                    <form action="{{ route('admin.adoption-applications.destroy', $app) }}" method="POST">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" onclick="return confirm('Czy na pewno usunąć ten wniosek na zawsze?')"
+                                                            class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-medium text-xs rounded-lg transition-colors">
+                                                            Usuń
+                                                        </button>
+                                                    </form>
                                                 </div>
-                                            @if ($app->status->name !== 'PENDING')
-                                                <div class="mt-2 text-xs text-gray-400 text-right">Brak akcji do wykonania</div>
-                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

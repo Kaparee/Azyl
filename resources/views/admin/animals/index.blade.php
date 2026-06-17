@@ -93,7 +93,7 @@
                                     <span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs">{{ $animal->status?->label() }}</span>
                                 @endif
                             </td>
-                            <td class="px-3 py-3">-</td>
+                            <td class="px-3 py-3">{{ $animal->caregiver->name ?? '-' }}</td>
                             <td class="px-3 py-3">{{ optional($animal->arrival_date)->format('Y-m-d') }}</td>
                             <td class="px-3 py-3 text-right">
                                 <a href="{{ route('admin.animals.edit', $animal) }}" class="text-slate-500 hover:text-blue-600">edytuj</a>

@@ -70,10 +70,6 @@ class AdoptionApplicationController extends Controller
 
         $newStatus = AdoptionStatus::from($request->status);
 
-        if ($application->status !== AdoptionStatus::PENDING) {
-            return redirect()->back()->with('error', 'Ten wniosek został już przetworzony.');
-        }
-
         DB::transaction(function () use ($application, $newStatus) {
             $application->update(['status' => $newStatus]);
 
@@ -158,5 +154,28 @@ class AdoptionApplicationController extends Controller
 
         return redirect()->route('user.adoption-applications.index')
             ->with('status', 'Wniosek został usunięty.');
+    }
+
+    /**
+     * Remove the specified application (Admin).
+     */
+    public function adminDestroy(AdoptionApplication $application)
+    {
+        DB::transaction(function () use ($application) {
+            $animalId = $application->animal_id;
+            $application->delete();
+
+            $pendingCount = AdoptionApplication::where('animal_id', $animalId)
+                ->where('status', AdoptionStatus::PENDING)
+                ->count();
+
+            $animal = Animal::find($animalId);
+            if ($pendingCount === 0 && $animal && $animal->status === AnimalStatus::PENDING) {
+                $animal->update(['status' => AnimalStatus::AVAILABLE]);
+            }
+        });
+
+        return redirect()->route('admin.adoption-applications.index')
+            ->with('success', 'Wniosek został usunięty.');
     }
 }

@@ -6,8 +6,7 @@
     @php
         $recentAnimals = \App\Models\Animal::with(['breed.species', 'animalImages.image'])
             ->where('status', 0) // AVAILABLE
-            ->withCount('recentClicks')
-            ->orderByDesc('recent_clicks_count')
+            ->latest()
             ->take(5)
             ->get();
         $recentFundraisers = \App\Models\Fundraiser::with('animal')->where('status', 1)->latest()->take(2)->get();
@@ -139,30 +138,30 @@
             <h2 class="text-3xl font-bold text-gray-900 mb-10">Jak możesz pomóc?</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition">
-                    <div class="text-4xl mb-4">🏠</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Adopcja</h3>
+                <a href="{{ route('animals.index') }}" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md hover:-translate-y-1 transition-all group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left">🏠</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-azyl-orange transition-colors">Adopcja</h3>
                     <p class="text-gray-600 text-sm mb-6 flex-grow">
                         Daj zwierzęciu prawdziwy dom. Złóż wniosek adopcyjny i przejdź przez nasz prosty proces weryfikacji.
                     </p>
-                    <a href="{{ route('animals.index') }}" class="text-azyl-orange font-medium hover:underline flex items-center text-sm mt-auto">Rozpocznij <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition">
-                    <div class="text-4xl mb-4">💖</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Adopcja wirtualna</h3>
+                    <span class="text-azyl-orange font-medium group-hover:underline flex items-center text-sm mt-auto">Rozpocznij <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                </a>
+                <a href="{{ route('fundraisers.index') }}" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md hover:-translate-y-1 transition-all group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left">💖</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-azyl-orange transition-colors">Adopcja wirtualna</h3>
                     <p class="text-gray-600 text-sm mb-6 flex-grow">
                         Wspieraj finansowo konkretne zwierzę. Otrzymuj regularne aktualizacje i zdjęcia podopiecznego.
                     </p>
-                    <a href="{{ route('fundraisers.index') }}" class="text-azyl-orange font-medium hover:underline flex items-center text-sm mt-auto">Wybierz podopiecznego <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition">
-                    <div class="text-4xl mb-4">🤝</div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Wolontariat</h3>
+                    <span class="text-azyl-orange font-medium group-hover:underline flex items-center text-sm mt-auto">Przejdź do zbiórek <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                </a>
+                <a href="{{ url('/jak-pomoc') }}" class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md hover:-translate-y-1 transition-all group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform origin-left">🤝</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-azyl-orange transition-colors">Wolontariat</h3>
                     <p class="text-gray-600 text-sm mb-6 flex-grow">
                         Dołącz do zespołu wolontariuszy. Spacery, karmienie, socjalizacja – każda godzina jest bezcenna.
                     </p>
-                    <a href="{{ url('/jak-pomoc') }}" class="text-azyl-orange font-medium hover:underline flex items-center text-sm mt-auto">Dołącz do nas <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
-                </div>
+                    <span class="text-azyl-orange font-medium group-hover:underline flex items-center text-sm mt-auto">Dołącz do nas <svg class="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                </a>
             </div>
         </div>
     </div>
@@ -220,9 +219,9 @@
                     <p class="text-sm text-gray-600 line-clamp-3 mb-4">{{ Str::limit(strip_tags($news->content), 100) }}</p>
                     
                     <div class="mt-auto pt-4 border-t border-gray-50">
-                        <span class="text-azyl-orange font-medium hover:underline text-sm inline-flex items-center cursor-pointer">
+                        <a href="{{ route('news.show', $news) }}" class="text-azyl-orange font-medium hover:underline text-sm inline-flex items-center cursor-pointer">
                             Czytaj więcej <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        </span>
+                        </a>
                     </div>
                 </div>
             </div>

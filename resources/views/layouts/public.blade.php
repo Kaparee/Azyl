@@ -30,6 +30,7 @@
                     <a href="{{ url('/') }}" class="{{ request()->is('/') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Strona główna</a>
                     <a href="{{ route('animals.index') }}" class="{{ request()->routeIs('animals.*') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Zwierzęta</a>
                     <a href="{{ url('/o-nas') }}" class="{{ request()->is('o-nas') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">O nas</a>
+                    <a href="{{ route('news.index') }}" class="{{ request()->routeIs('news.*') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Aktualności</a>
                     <a href="{{ url('/jak-pomoc') }}" class="{{ request()->is('jak-pomoc') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Jak pomóc</a>
                     <a href="{{ url('/kontakt') }}" class="{{ request()->is('kontakt') ? 'text-gray-900 font-semibold border-b-2 border-azyl-orange pb-1' : 'text-gray-500 font-medium hover:text-gray-900 transition' }}">Kontakt</a>
                 </div>

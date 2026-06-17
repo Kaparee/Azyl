@@ -119,7 +119,97 @@
                 <p class="text-sm text-slate-500">Token QR: {{ $animal->qr_token }}</p>
 
                 <h2 class="font-bold mt-6 mb-4">
-                    <span class="inline-flex w-6 h-6 rounded-full bg-green-500 text-white items-center justify-center text-xs">3</span>
+                    <span class="inline-flex w-6 h-6 rounded-full bg-purple-500 text-white items-center justify-center text-xs">3</span>
+                    Cechy charakteru
+                </h2>
+
+                <div class="mb-4">
+                    <label class="block text-sm mb-1">Cechy (zaznacz pasujące)</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        @foreach(['Przyjazny dzieciom', 'Zna komendy', 'Aktywny', 'Lubi opiekę', 'Nie gryzie', 'Wymaga socjalizacji', 'Spokojny', 'Płochliwy'] as $trait)
+                            <label class="flex items-center gap-2 text-sm border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50 transition">
+                                <input type="checkbox" name="traits[]" value="{{ $trait }}" @checked(in_array($trait, old('traits', $animal->traits ?? []))) class="rounded border-slate-300 text-orange-500 focus:ring-orange-500">
+                                <span>{{ $trait }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <h2 class="font-bold mt-8 mb-4">
+                    <span class="inline-flex w-6 h-6 rounded-full bg-rose-500 text-white items-center justify-center text-xs">4</span>
+                    Wymagania adopcyjne
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm mb-1">Warunki mieszkaniowe</label>
+                        <input name="housing_conditions" value="{{ old('housing_conditions', $animal->housing_conditions) }}" class="w-full rounded-xl border-slate-200" placeholder="np. Dom z ogrodem">
+                        @error('housing_conditions') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Wymagane doświadczenie</label>
+                        <input name="experience_required" value="{{ old('experience_required', $animal->experience_required) }}" class="w-full rounded-xl border-slate-200" placeholder="np. Podstawowe">
+                        @error('experience_required') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Czas poświęcony dziennie</label>
+                        <input name="daily_time_required" value="{{ old('daily_time_required', $animal->daily_time_required) }}" class="w-full rounded-xl border-slate-200" placeholder="np. Minimum 2 godziny">
+                        @error('daily_time_required') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <label class="flex items-center gap-2 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50">
+                        <input type="checkbox" name="is_child_friendly" value="1" @checked(old('is_child_friendly', $animal->is_child_friendly)) class="rounded border-slate-300 text-orange-500 focus:ring-orange-500">
+                        <span class="text-sm font-semibold text-slate-700">Przyjazny dzieciom</span>
+                    </label>
+                    <label class="flex items-center gap-2 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50">
+                        <input type="checkbox" name="accepts_cats" value="1" @checked(old('accepts_cats', $animal->accepts_cats)) class="rounded border-slate-300 text-orange-500 focus:ring-orange-500">
+                        <span class="text-sm font-semibold text-slate-700">Akceptuje koty</span>
+                    </label>
+                    <label class="flex items-center gap-2 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50">
+                        <input type="checkbox" name="accepts_dogs" value="1" @checked(old('accepts_dogs', $animal->accepts_dogs)) class="rounded border-slate-300 text-orange-500 focus:ring-orange-500">
+                        <span class="text-sm font-semibold text-slate-700">Akceptuje inne psy</span>
+                    </label>
+                    <label class="flex items-center gap-2 border border-slate-200 rounded-xl p-3 cursor-pointer hover:bg-slate-50">
+                        <input type="checkbox" name="requires_responsible_caregiver" value="1" @checked(old('requires_responsible_caregiver', $animal->requires_responsible_caregiver)) class="rounded border-slate-300 text-red-500 focus:ring-red-500">
+                        <span class="text-sm font-semibold text-slate-700">Wymaga doświadczonego opiekuna</span>
+                    </label>
+                </div>
+
+                <h2 class="font-bold mt-8 mb-4">
+                    <span class="inline-flex w-6 h-6 rounded-full bg-indigo-500 text-white items-center justify-center text-xs">5</span>
+                    Kontakt z opiekunem
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm mb-1">Opiekun *</label>
+                        <select name="caregiver_id" required class="w-full rounded-xl border-slate-200 tom-select" placeholder="Wybierz opiekuna...">
+                            <option value="">Wybierz...</option>
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->id }}" {{ old('caregiver_id', $animal->caregiver_id) == $emp->id ? 'selected' : '' }}>{{ $emp->name }} (Pracownik)</option>
+                            @endforeach
+                            @foreach($volunteers as $vol)
+                                <option value="{{ $vol->id }}" {{ old('caregiver_id', $animal->caregiver_id) == $vol->id ? 'selected' : '' }}>{{ $vol->name }} (Wolontariusz)</option>
+                            @endforeach
+                        </select>
+                        @error('caregiver_id') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm mb-1">Telefon kontaktowy</label>
+                        <input name="contact_phone" value="{{ old('contact_phone', $animal->contact_phone) }}" class="w-full rounded-xl border-slate-200" placeholder="np. +48 123 456 789">
+                        @error('contact_phone') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm mb-1">Godziny odwiedzin (np. Pon-Pt 10:00-15:00)</label>
+                        <input name="visiting_hours" value="{{ old('visiting_hours', $animal->visiting_hours) }}" class="w-full rounded-xl border-slate-200" placeholder="np. Pon-Pt 10:00-17:00">
+                        @error('visiting_hours') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <h2 class="font-bold mt-8 mb-4">
+                    <span class="inline-flex w-6 h-6 rounded-full bg-emerald-500 text-white items-center justify-center text-xs">6</span>
                     Zdjęcia
                 </h2>
 

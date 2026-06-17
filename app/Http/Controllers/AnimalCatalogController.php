@@ -14,6 +14,7 @@ class AnimalCatalogController extends Controller
     public function index(Request $request)
     {
         $animals = Animal::with(['breed.species', 'animalImages.image'])
+            ->where('status', '!=', 2)
             ->withCount('likedByUsers')
             ->withCount('recentClicks')
             ->orderBy('recent_clicks_count', 'desc');
