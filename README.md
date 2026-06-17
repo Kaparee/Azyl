@@ -255,14 +255,13 @@ Wizualizacja wygenerowana w projekcie:
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (+ **WSL2** na Windows)
 - Git
-- Opcjonalnie: Composer lokalnie (można użyć obrazu Sail)
 
 > Kontener aplikacji działa na **PHP 8.5** (`compose.yaml` → `docker/8.5`). Wymaganie projektu: PHP **8.4+**.
 
 ### Windows — uwagi
 
 - Uruchamiaj komendy w terminalu WSL2 lub Git Bash; unikaj mieszania ścieżek `C:\` z `/var/www/html`.
-- Po `migrate:fresh --seed` koniecznie wykonaj `storage:link` — inaczej zdjęcia zwierząt nie wyświetlą się w przeglądarce.
+- Nie uruchamiaj Dockera jako `root` / `sudo` — `WWWUSER` domyślnie ustawia się na `1000`.
 - `ImageAndLikeSeeder` kopiuje pliki z `public/images/seed/animals/` do `storage/app/public/animals/` — upewnij się, że katalog seed istnieje w repozytorium.
 
 ### Kroki
@@ -270,11 +269,14 @@ Wizualizacja wygenerowana w projekcie:
 ```bash
 git clone <adres_repozytorium>
 cd Azyl
-docker compose up -d
+# opcjonalnie — kontener sam skopiuje .env.example przy pierwszym starcie:
+# cp .env.example .env
+docker compose up -d --build
 ```
 
+Przy pierwszym uruchomieniu kontener automatycznie: tworzy `.env`, instaluje zależności (Composer + npm), buduje assety Vite, czeka na MySQL, uruchamia migracje z seederami i tworzy `storage:link`. Kolejne restarty są szybkie (pomijają setup).
 
-**7. Aplikacja:** [http://localhost](http://localhost)
+**Aplikacja:** [http://localhost](http://localhost)
 
 **Konta testowe** (hasło: `password`): `admin@azyl.pl`, `pracownik@azyl.pl`, `weterynarz@azyl.pl`, `wolontariusz@azyl.pl`, `adoptujacy@azyl.pl`
 

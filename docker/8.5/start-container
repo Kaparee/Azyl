@@ -22,80 +22,145 @@ if [ $# -gt 0 ]; then
         exec gosu $WWWUSER "$@"
     fi
 else
-    # ============================================================
-    # AUTO-SETUP: Uruchamiane tylko przy pierwszym starcie
-    # ============================================================
-
     SETUP_MARKER="/var/www/html/storage/.setup-done"
+    VENDOR_FILE="/var/www/html/vendor/autoload.php"
+    MANIFEST_FILE="/var/www/html/public/build/manifest.json"
 
-    if [ ! -f "$SETUP_MARKER" ]; then
+    # Wczytujemy DB z .env gdy compose nie przekazał zmiennych (np. brak .env na hoście)
+    load_env_from_file() {
+        local var_name="$1"
+        local default_value="$2"
+        if [ -z "${!var_name}" ]; then
+            if [ -f /var/www/html/.env ]; then
+                local value
+                value=$(grep -E "^${var_name}=" /var/www/html/.env 2>/dev/null | head -1 | cut -d '=' -f2- | sed 's/^["'\'']//;s/["'\'']$//' | tr -d '\r')
+                if [ -n "$value" ]; then
+                    export "$var_name=$value"
+                    return
+                fi
+            fi
+            export "$var_name=$default_value"
+        fi
+    }
+
+    load_env_from_file DB_HOST mysql
+    load_env_from_file DB_DATABASE azyl
+    load_env_from_file DB_USERNAME root
+    load_env_from_file DB_PASSWORD ""
+
+    # Marker bez vendora oznacza niedokończony setup — usuwamy go i zaczynamy od nowa
+    if [ -f "$SETUP_MARKER" ] && [ ! -f "$VENDOR_FILE" ]; then
+        rm -f "$SETUP_MARKER"
+    fi
+
+    # Setup tylko gdy brakuje markera, composera albo zbudowanych assetów Vite
+    needs_setup() {
+        [ ! -f "$SETUP_MARKER" ] || [ ! -f "$VENDOR_FILE" ] || [ ! -f "$MANIFEST_FILE" ]
+    }
+
+    mysql_ping() {
+        if [ -z "${DB_PASSWORD}" ]; then
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -e "SELECT 1" "${DB_DATABASE}" > /dev/null 2>&1
+        else
+            mysql -h"${DB_HOST}" -u"${DB_USERNAME}" -p"${DB_PASSWORD}" -e "SELECT 1" "${DB_DATABASE}" > /dev/null 2>&1
+        fi
+    }
+
+    run_setup() {
+        local failed=0
+
         echo ""
         echo "============================================"
         echo "  AZYL - Automatyczna konfiguracja projektu"
         echo "============================================"
         echo ""
 
-        # 1. Kopiuj .env jeśli nie istnieje
+        # Bez .env Laravel nie wie jak połączyć się z bazą — kopiujemy z przykładu
         if [ ! -f /var/www/html/.env ]; then
             echo "[1/7] Tworzenie pliku .env..."
-            cp /var/www/html/.env.example /var/www/html/.env
+            cp /var/www/html/.env.example /var/www/html/.env || failed=1
         else
             echo "[1/7] Plik .env już istnieje - pomijam."
         fi
 
-        # 2. Instalacja zależności PHP
+        load_env_from_file DB_HOST mysql
+        load_env_from_file DB_DATABASE azyl
+        load_env_from_file DB_USERNAME root
+        load_env_from_file DB_PASSWORD ""
+
         echo "[2/7] Instalacja zależności Composer..."
         cd /var/www/html
-        composer install --no-interaction --optimize-autoloader --no-progress 2>&1
+        if ! composer install --no-interaction --optimize-autoloader --no-progress 2>&1; then
+            # Gdy composer.lock wymaga innej wersji PHP niż w kontenerze
+            if ! composer install --no-interaction --optimize-autoloader --no-progress --ignore-platform-reqs 2>&1; then
+                failed=1
+            fi
+        fi
 
-        # 3. Generuj klucz aplikacji (jeśli brak)
-        if grep -q "^APP_KEY=$" /var/www/html/.env 2>/dev/null; then
+        if [ -f /var/www/html/.env ] && grep -q "^APP_KEY=$" /var/www/html/.env 2>/dev/null; then
             echo "[3/7] Generowanie klucza aplikacji..."
-            php artisan key:generate --force
+            php artisan key:generate --force || failed=1
         else
             echo "[3/7] Klucz aplikacji już istnieje - pomijam."
         fi
 
-        # 4. Instalacja zależności NPM + budowanie assetów
         echo "[4/7] Instalacja npm i budowanie assetów (Vite)..."
-        npm install --no-progress 2>&1
-        npm run build 2>&1
+        npm install --no-progress 2>&1 || failed=1
+        npm run build 2>&1 || failed=1
 
-        # 5. Czekaj na MySQL
         echo "[5/7] Czekanie na gotowość MySQL..."
         RETRIES=30
-        until mysql -h"${DB_HOST:-mysql}" -u"${DB_USERNAME:-root}" -p"${DB_PASSWORD}" -e "SELECT 1" "${DB_DATABASE:-azyl}" > /dev/null 2>&1; do
+        until mysql_ping; do
             RETRIES=$((RETRIES - 1))
             if [ $RETRIES -le 0 ]; then
-                echo "  MySQL nie odpowiada po 30 próbach - próbuję kontynuować..."
+                echo "  MySQL nie odpowiada po 30 próbach - kontynuuję mimo to..."
+                failed=1
                 break
             fi
             echo "  Czekam na MySQL... (pozostało $RETRIES prób)"
             sleep 2
         done
-        echo "  MySQL gotowy!"
+        if [ $RETRIES -gt 0 ]; then
+            echo "  MySQL gotowy!"
+        fi
 
-        # 6. Migracje + seedy
         echo "[6/7] Migracja bazy danych i seedowanie..."
-        php artisan migrate --force --seed 2>&1
+        php artisan migrate --force --seed 2>&1 || failed=1
 
-        # 7. Storage link
         echo "[7/7] Tworzenie dowiązania symbolicznego storage..."
-        php artisan storage:link --force 2>&1
+        php artisan storage:link --force 2>&1 || failed=1
 
-        # Ustaw uprawnienia
         chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
         chown -R sail:sail /var/www/html/storage /var/www/html/bootstrap/cache
 
-        # Oznacz setup jako wykonany
-        touch "$SETUP_MARKER"
+        if [ $failed -eq 0 ]; then
+            touch "$SETUP_MARKER"
+            echo ""
+            echo "============================================"
+            echo "  AZYL - Konfiguracja zakończona!"
+            echo "  Aplikacja dostępna pod: http://localhost"
+            echo "============================================"
+            echo ""
+        else
+            # Bez usuwania markera kolejny restart myślałby że setup się udał
+            rm -f "$SETUP_MARKER"
+            echo ""
+            echo "============================================"
+            echo "  AZYL - Konfiguracja NIEUDANA!"
+            echo "  Napraw błędy i zrestartuj kontener."
+            echo "============================================"
+            echo ""
+        fi
+    }
 
-        echo ""
-        echo "============================================"
-        echo "  AZYL - Konfiguracja zakończona!"
-        echo "  Aplikacja dostępna pod: http://localhost"
-        echo "============================================"
-        echo ""
+    if needs_setup; then
+        run_setup
+    fi
+
+    # Zdjęcia zwierząt idą przez public/storage — link musi istnieć po każdym starcie
+    if [ -f "$VENDOR_FILE" ] && [ ! -e /var/www/html/public/storage ]; then
+        cd /var/www/html
+        php artisan storage:link --force 2>&1
     fi
 
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
