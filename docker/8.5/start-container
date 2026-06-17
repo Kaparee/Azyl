@@ -98,5 +98,10 @@ else
         echo ""
     fi
 
+    # Symlink może zniknąć po remouncie wolumenu (np. Windows) — upewnij się, że istnieje.
+    if [ ! -e /var/www/html/public/storage ]; then
+        php artisan storage:link --force 2>&1
+    fi
+
     exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
 fi

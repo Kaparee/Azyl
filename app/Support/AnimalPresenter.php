@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Enums\AnimalStatus;
 use App\Models\Animal;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Formatuje dane zwierzęcia do wyświetlenia w widokach.
@@ -16,7 +17,7 @@ class AnimalPresenter
         $firstImage = $animal->animalImages->sortBy('sort_order')->first();
         $imagePath = $firstImage?->image?->file_name;
 
-        if ($imagePath) {
+        if ($imagePath && Storage::disk('public')->exists($imagePath)) {
             return asset('storage/'.$imagePath);
         }
 
@@ -56,7 +57,7 @@ class AnimalPresenter
     {
         return $animal->animalImages
             ->sortBy('sort_order')
-            ->filter(fn ($photo) => $photo->image?->file_name)
+            ->filter(fn ($photo) => $photo->image?->file_name && Storage::disk('public')->exists($photo->image->file_name))
             ->map(fn ($photo) => asset('storage/'.$photo->image->file_name))
             ->values()
             ->all();

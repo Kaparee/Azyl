@@ -39,6 +39,8 @@ class ImageAndLikeSeeder extends Seeder
 
         foreach ($animals as $animal) {
             if ($animal->animalImages()->exists()) {
+                $this->repairMissingFiles($animal, $seedDir, $storageDir);
+
                 continue;
             }
 
@@ -77,6 +79,31 @@ class ImageAndLikeSeeder extends Seeder
                     'user_id' => $user->id,
                 ]);
             }
+        }
+    }
+
+    private function repairMissingFiles(Animal $animal, string $seedDir, string $storageDir): void
+    {
+        $animal->loadMissing('animalImages.image');
+
+        foreach ($animal->animalImages as $animalImage) {
+            $storagePath = $animalImage->image?->file_name;
+            if (! $storagePath) {
+                continue;
+            }
+
+            $destPath = storage_path('app/public/'.$storagePath);
+            if (File::exists($destPath)) {
+                continue;
+            }
+
+            $sourceFile = $this->resolveSeedImage($animal, $seedDir);
+            if (! $sourceFile) {
+                continue;
+            }
+
+            File::ensureDirectoryExists(dirname($destPath));
+            File::copy($sourceFile, $destPath);
         }
     }
 
