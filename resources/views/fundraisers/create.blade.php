@@ -39,7 +39,7 @@
                     </div>
                     <div>
                         <label for="end_date" class="block text-sm font-bold text-gray-700 mb-2">Data zakończenia (opcjonalnie)</label>
-                        <input type="date" id="end_date" name="end_date"
+                        <input type="date" id="end_date" name="end_date" min="{{ date('Y-m-d') }}"
                             class="w-full rounded-xl border-gray-200 focus:border-orange-500 focus:ring-orange-500 shadow-sm">
                     </div>
                 </div>

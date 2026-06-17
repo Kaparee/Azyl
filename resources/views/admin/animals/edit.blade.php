@@ -48,7 +48,7 @@
 
                     <div>
                         <label class="block text-sm mb-1">Wiek w miesiącach *</label>
-                        <input type="number" name="age_months" value="{{ old('age_months', $animal->age_months) }}" class="w-full rounded-xl border-slate-200" required>
+                        <input type="number" name="age_months" value="{{ old('age_months', $animal->age_months) }}" class="w-full rounded-xl border-slate-200" required min="0" max="360">
                         @error('age_months') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
@@ -63,7 +63,7 @@
 
                     <div>
                         <label class="block text-sm mb-1">Rozmiar / wzrost *</label>
-                        <input type="number" name="height" value="{{ old('height', $animal->height) }}" class="w-full rounded-xl border-slate-200" required>
+                        <input type="number" name="height" value="{{ old('height', $animal->height) }}" class="w-full rounded-xl border-slate-200" required min="1" max="300">
                         @error('height') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
@@ -87,13 +87,13 @@
 
                     <div>
                         <label class="block text-sm mb-1">Data przyjęcia *</label>
-                        <input type="date" name="arrival_date" value="{{ old('arrival_date', optional($animal->arrival_date)->format('Y-m-d')) }}" class="w-full rounded-xl border-slate-200" required>
+                        <input type="date" name="arrival_date" value="{{ old('arrival_date', optional($animal->arrival_date)->format('Y-m-d')) }}" class="w-full rounded-xl border-slate-200" required max="{{ date('Y-m-d') }}">
                         @error('arrival_date') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm mb-1">Opłata adopcyjna *</label>
-                        <input type="number" step="0.01" name="adoption_fee" value="{{ old('adoption_fee', $animal->adoption_fee) }}" class="w-full rounded-xl border-slate-200" required>
+                        <input type="number" step="0.01" name="adoption_fee" value="{{ old('adoption_fee', $animal->adoption_fee) }}" class="w-full rounded-xl border-slate-200" required min="0">
                         @error('adoption_fee') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
                     </div>
                 </div>
