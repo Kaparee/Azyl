@@ -47,10 +47,8 @@ services:
             - sail
         healthcheck:
             test:
-                - CMD
-                - mysqladmin
-                - ping
-                - '-p${DB_PASSWORD}'
+                - CMD-SHELL
+                - 'if [ -n "$$MYSQL_ROOT_PASSWORD" ]; then mysqladmin ping -p"$$MYSQL_ROOT_PASSWORD"; else mysqladmin ping; fi'
             retries: 3
             timeout: 5s
     mailpit:
