@@ -65,13 +65,7 @@ Wizualizacja wygenerowana w projekcie:
 
 ---
 
-## 6. Przewodnik po aplikacji
-
-Szczegółowy opis przepływów użytkownika według ról (Gość, Adoptujący, Wolontariusz, Pracownik, Weterynarz, Admin), proces adopcji end-to-end, API oraz zrzuty ekranu: **[docs/PRZEWODNIK_APLIKACJI.md](docs/PRZEWODNIK_APLIKACJI.md)**.
-
----
-
-## 7. Kierunki dalszego rozwoju
+## 6. Kierunki dalszego rozwoju
 
 **Przechowywanie zdjęć (Windows)** — pliki lądują w `storage/app/public/animals`; bez `php artisan storage:link` i poprawnych uprawnień WSL/Docker obrazy z seedera (`ImageAndLikeSeeder`) nie będą widoczne. Rozważyć S3/Cloudinary zamiast lokalnego dysku na produkcji.
 
@@ -89,7 +83,7 @@ Szczegółowy opis przepływów użytkownika według ról (Gość, Adoptujący, 
 
 ---
 
-## 8. Instrukcja krok po kroku uruchomienia
+## 7. Instrukcja krok po kroku uruchomienia
 
 ### Wymagania
 
@@ -126,240 +120,43 @@ Przy pierwszym uruchomieniu kontener automatycznie: tworzy `.env`, instaluje zal
 
 ---
 
-## 9. Przebieg działania aplikacji
+## 8. Wybrany, reprezentatywny przebieg użytku aplikacji / logiki biznesowej
 
-Poniżej szczegółowo opisano ścieżki i przebieg działania aplikacji w podziale na role użytkowników. Każdy zalogowany użytkownik po uwierzytelnieniu trafia na główny pulpit `/dashboard` (`DashboardController`), którego zawartość dopasowuje się automatycznie do posiadanej roli.
+Poniżej szczegółowo opisano ścieżkę i przebieg działania aplikacji od perspektywy potencjalnego adoptującego (od wejścia jako gość, przez logowanie, polubienie, aż po adopcję).
 
 ---
 
-### 9.1. Gość (użytkownik niezalogowany)
-Użytkownik bez zalogowania ma dostęp wyłącznie do warstwy prezentacyjnej serwisu.
+### 8.1. Przebieg procesu Adoptującego
 
-1. **Strona główna**
+1. **Krok 1: Strona główna**
    - **URL**: `/`
    - **Kontroler**: `HomeController@index`
-   - **Opis**: Podgląd wyróżnionych zwierząt, aktywnych zbiórek finansowych oraz skrótów do głównych sekcji strony.
-2. **Katalog zwierząt**
+   - **Opis**: Użytkownik wchodzi na stronę główną schroniska "Azyl".
+   ![Strona główna](docs/main_page.png)
+
+2. **Krok 2: Katalog zwierząt (Zwierzaki)**
    - **URL**: `/animals`
    - **Kontroler**: `AnimalCatalogController@index`
-   - **Opis**: Przeglądanie zwierząt; domyślnie tylko **do adopcji** (AVAILABLE), z filtrami po gatunku, rasie, płci i statusie (w tym adoptowane — parametr `status`).
-3. **Profil zwierzęcia**
-   - **URL**: `/animals/{animal}`
-   - **Kontroler**: `AnimalCatalogController@show`
-   - **Opis**: Szczegółowe informacje o wybranym zwierzęciu, galeria zdjęć, skrócona historia leczenia (ostatnie 3 wpisy z kartoteki) oraz przycisk złożenia wniosku o adopcję (wymaga zalogowania). Każde wyświetlenie zwiększa licznik `animal_clicks`.
-4. **Skan kodu QR zwierzęcia**
-   - **URL**: `/a/{qr_token}`
-   - **Kontroler**: `AnimalCatalogController@qr`
-   - **Opis**: Szybkie przekierowanie bezpośrednio na profil zwierzęcia po zeskanowaniu fizycznego kodu QR na klatce.
-5. **Katalog zbiórek**
-   - **URL**: `/fundraisers`
-   - **Kontroler**: `FundraiserController@index`
-   - **Opis**: Lista aktywnych i zakończonych zbiórek finansowych na leczenie i utrzymanie zwierząt.
-6. **Profil zbiórki**
-   - **URL**: `/fundraisers/{fundraiser}`
-   - **Kontroler**: `FundraiserController@show`
-   - **Opis**: Szczegóły zbiórki, pasek postępu celu finansowego oraz lista ostatnich 5 wpłat.
-7. **Aktualności**
-   - **URL**: `/aktualnosci`
-   - **Kontroler**: `PublicNewsController@index`
-   - **Opis**: Lista publicznych artykułów i ogłoszeń publikowanych przez schronisko.
-8. **Rejestracja i Logowanie**
-   - **URL**: `/register` i `/login`
-   - **Kontroler**: `Auth\RegisteredUserController` i `Auth\AuthenticatedSessionController`
-   - **Opis**: Rejestracja nowego konta (domyślnie z rolą Adoptujący) lub logowanie na istniejące konto.
+   - **Opis**: Przejście do spisu wszystkich zwierząt w schronisku z filtrami wyszukiwania.
+   ![Katalog zwierząt](docs/animals_listing.png)
 
----
+3. **Krok 3: Logowanie (wymagane do interakcji)**
+   - **URL**: `/login`
+   - **Kontroler**: `Auth\AuthenticatedSessionController@create`
+   - **Opis**: Dowolna próba polubienia zwierzaka lub wysłania wniosku o adopcję wymaga konta i przekierowuje użytkownika do formularza logowania.
+   ![Logowanie](docs/login_page.png)
 
-### 9.2. Adoptujący
-Rola przeznaczona dla osób zainteresowanych adopcją lub wsparciem finansowym zwierząt.
-
-1. **Rejestracja użytkownika**
-   - **URL**: `/register`
-   - **Kontroler**: `Auth\RegisteredUserController@store`
-   - **Opis**: Założenie konta przez formularz rejestracji z automatycznym przypisaniem roli Adoptujący.
-2. **Polubienie zwierzęcia**
+4. **Krok 4: Polubienie zwierzęcia**
    - **URL**: POST `/animals/{animal}/like`
    - **Kontroler**: `AnimalLikeController@toggle`
-   - **Opis**: Dodanie lub usunięcie zwierzęcia z listy ulubionych.
-3. **Lista polubionych zwierząt**
-   - **URL**: `/polubione-zwierzeta`
-   - **Kontroler**: `AnimalLikeController@index`
-   - **Opis**: Przeglądanie spersonalizowanej listy zwierząt oznaczonych jako polubione.
-4. **Złożenie wniosku adopcyjnego**
+   - **Opis**: Po zalogowaniu użytkownik może polubić wybrane zwierzę, co zaznacza czerwone serduszko na karcie zwierzęcia.
+   ![Polubienie zwierzęcia](docs/logged_animal_page_liked.png)
+
+5. **Krok 5: Formularz adopcji**
    - **URL**: POST `/adoption-applications`
    - **Kontroler**: `AdoptionApplicationController@store`
-   - **Opis**: Wysłanie wniosku o adopcję wybranego zwierzęcia. Zmienia status zwierzęcia na `w trakcie` (PENDING), uniemożliwiając innym wysłanie wniosku.
-5. **Moje wnioski**
-   - **URL**: `/moje-wnioski`
-   - **Kontroler**: `AdoptionApplicationController@myApplications`
-   - **Opis**: Podgląd listy złożonych wniosków wraz z ich bieżącym statusem (oczekujący, zaakceptowany, odrzucony).
-6. **Szczegóły wniosku**
-   - **URL**: `/moje-wnioski/{application}`
-   - **Kontroler**: `AdoptionApplicationController@showMyApplication`
-   - **Opis**: Karta szczegółowa wybranego wniosku adopcyjnego.
-7. **Wycofanie wniosku**
-   - **URL**: DELETE `/moje-wnioski/{application}`
-   - **Kontroler**: `AdoptionApplicationController@destroy`
-   - **Opis**: Usunięcie oczekującego wniosku adopcyjnego. Jeśli brak innych wniosków oczekujących, status zwierzęcia wraca na `dostępny`.
-8. **Przekazanie darowizny**
-   - **URL**: POST `/donations`
-   - **Kontroler**: `DonationController@store`
-   - **Opis**: Dokonanie wpłaty na wybraną zbiórkę (jako zalogowany lub anonimowo). Kwota natychmiast zwiększa `collected_amount` zbiórki.
+   - **Opis**: Adoptujący wypełnia i wysyła wniosek o adopcję bezpośrednio z karty wybranego zwierzęcia.
+   ![Formularz adopcji](docs/logged_animal_page_adoption.png)
 
----
 
-### 9.3. Wolontariusz
-Rola wspierająca codzienne funkcjonowanie schroniska poprzez realizację wyznaczonych zadań.
-
-1. **Dashboard wolontariusza**
-   - **URL**: `/dashboard`
-   - **Kontroler**: `DashboardController@index` (wywołuje wewnętrznie widok wolontariusza)
-   - **Opis**: Zestawienie przypisanych do zalogowanego wolontariusza pilnych zadań na dany dzień.
-2. **Plan dnia (Lista zadań)**
-   - **URL**: `/volunteer-tasks`
-   - **Kontroler**: `VolunteerTaskController@index`
-   - **Opis**: Lista wszystkich zadań przypisanych do zalogowanego wolontariusza z podziałem na statusy.
-3. **Zmiana statusu zadania**
-   - **URL**: PATCH `/volunteer-tasks/{task}`
-   - **Kontroler**: `VolunteerTaskController@update`
-   - **Opis**: Szybka zmiana statusu zadania (np. do zrobienia -> w trakcie -> ukończone).
-4. **Katalog zwierząt (odczyt)**
-   - **URL**: `/panel/zwierzeta`
-   - **Kontroler**: `AnimalCatalogController@panelIndex`
-   - **Opis**: Odczytowa lista zwierząt w schronisku z filtrami, przeznaczona dla wolontariuszy do weryfikacji ich statusów.
-
----
-
-### 9.4. Pracownik
-Rola odpowiedzialna za bieżącą opiekę, ewidencję zwierząt i procesy adopcyjne.
-
-1. **Dashboard pracownika**
-   - **URL**: `/dashboard`
-   - **Kontroler**: `DashboardController@index`
-   - **Opis**: Statystyki aktywności adopcyjnej, stan zwierząt w schronisku oraz zadania bieżącego miesiąca.
-2. **Ewidencja zwierząt (CRUD)**
-   - **URL**: `/admin/animals` (oraz podstrony create/edit)
-   - **Kontroler**: `Admin\AnimalController` (metody index, create, store, edit, update, destroy)
-   - **Opis**: Pełne zarządzanie katalogiem zwierząt, w tym dodawanie profili z przesyłaniem wielu zdjęć oraz automatyczne generowanie unikalnych tokenów QR.
-3. **Zarządzanie gatunkami i rasami**
-   - **URL**: `/admin/species` i `/admin/breeds`
-   - **Kontroler**: `Admin\SpeciesController` i `Admin\BreedController`
-   - **Opis**: Zarządzanie słownikami gatunków oraz przypisanych do nich ras zwierząt.
-4. **Zarządzanie wnioskami adopcyjnymi**
-   - **URL**: `/admin/adoption-applications`
-   - **Kontroler**: `AdoptionApplicationController@index`
-   - **Opis**: Lista wszystkich wniosków adopcyjnych złożonych przez użytkowników z opcją wyszukiwania.
-5. **Decyzja adopcyjna**
-   - **URL**: PATCH `/admin/adoption-applications/{application}`
-   - **Kontroler**: `AdoptionApplicationController@update`
-   - **Opis**: Akceptacja lub odrzucenie wniosku w ramach transakcji DB. Akceptacja zmienia status zwierzęcia na `adoptowane` i anuluje pozostałe oczekujące wnioski dla tego zwierzęcia.
-6. **Usunięcie wniosku (Pracownik/Admin)**
-   - **URL**: DELETE `/admin/adoption-applications/{application}`
-   - **Kontroler**: `AdoptionApplicationController@adminDestroy`
-   - **Opis**: Usunięcie karty wniosku z bazy danych wraz z ewentualnym przywróceniem dostępności zwierzęcia.
-7. **Utworzenie zbiórki finansowej**
-   - **URL**: `/admin/fundraisers/create` (formularz) oraz POST `/admin/fundraisers`
-   - **Kontroler**: `FundraiserController@create` i `@store`
-   - **Opis**: Tworzenie nowej zbiórki powiązanej z konkretnym zwierzęciem i określeniem kwoty docelowej.
-8. **Edycja i zamknięcie zbiórki**
-   - **URL**: `/admin/fundraisers/{fundraiser}/edit` oraz PATCH `/admin/fundraisers/{fundraiser}`
-   - **Kontroler**: `FundraiserController@edit` i `@update`
-   - **Opis**: Modyfikacja opisu, tytułu, kwoty docelowej lub daty zakończenia zbiórki.
-9. **Zlecanie zadań wolontariuszom**
-   - **URL**: POST `/volunteer-tasks`
-   - **Kontroler**: `VolunteerTaskController@store`
-   - **Opis**: Tworzenie nowego zadania w planie dnia i przypisywanie go do wybranego wolontariusza.
-10. **Zarządzanie aktualnościami (CRUD)**
-    - **URL**: `/admin/news`
-    - **Kontroler**: `Admin\NewsController`
-    - **Opis**: Dodawanie, edycja i usuwanie wpisów na blogu/aktualnościach schroniska.
-
----
-
-### 9.5. Weterynarz
-Rola dedykowana dla personelu medycznego schroniska.
-
-1. **Dashboard weterynarza**
-   - **URL**: `/dashboard`
-   - **Kontroler**: `DashboardController@index`
-   - **Opis**: Podsumowanie kosztów leczenia w bieżącym miesiącu oraz lista ostatnio dodanych kartotek.
-2. **Kartoteki medyczne (Zarządzanie)**
-   - **URL**: `/medical-records`
-   - **Kontroler**: `MedicalRecordController@index`
-   - **Opis**: Lista zwierząt wraz z ich historią leczenia. Filtrowanie po typie zabiegu.
-3. **Dodanie wpisu medycznego**
-   - **URL**: POST `/medical-records`
-   - **Kontroler**: `MedicalRecordController@store`
-   - **Opis**: Zarejestrowanie nowego zabiegu, diagnozy, daty i kosztu leczenia dla zwierzęcia.
-4. **Modyfikacja i usuwanie kartoteki**
-   - **URL**: PATCH `/medical-records/{record}` i DELETE `/medical-records/{record}`
-   - **Kontroler**: `MedicalRecordController@update` i `@destroy`
-   - **Opis**: Poprawianie błędów we wpisach medycznych bądź ich usuwanie.
-5. **Eksport karty medycznej do PDF**
-   - **URL**: `/medical-records/{animal}/pdf`
-   - **Kontroler**: `MedicalRecordController@exportPdf`
-   - **Opis**: Generowanie i pobranie pliku PDF zawierającego kompletną historię medyczną danego zwierzęcia.
-
----
-
-### 9.6. Administrator (Admin)
-Rola o najwyższych uprawnieniach, łącząca funkcjonalności pracownika i weterynarza z zarządzaniem systemem.
-
-1. **Dashboard główny**
-   - **URL**: `/dashboard`
-   - **Kontroler**: `DashboardController@index`
-   - **Opis**: Kompleksowe statystyki finansowe, wykresy rozkładu gatunków oraz wskaźniki efektywności adopcji (KPI) z użyciem Chart.js.
-2. **Zarządzanie użytkownikami (CRUD)**
-   - **URL**: `/users` (oraz powiązane akcje POST/PATCH/DELETE)
-   - **Kontroler**: `UserController` (metody index, store, update, destroy)
-   - **Opis**: Dodawanie kont pracowników, weterynarzy i wolontariuszy, edycja ich uprawnień oraz usuwanie kont.
-3. **Eksport bazy użytkowników do CSV**
-   - **URL**: `/users/export-csv`
-   - **Kontroler**: `UserController@exportCsv`
-   - **Opis**: Generowanie i pobranie pliku CSV z listą zarejestrowanych w systemie użytkowników.
-
----
-
-### 9.7. API i dokumentacja Swagger
-Publiczne endpointy REST API (metoda GET, format JSON) przeznaczone do integracji z zewnętrznymi systemami. Warstwa webowa (`/animals`, formularze POST) obsługuje pełny obieg adopcji; API służy głównie do odczytu danych (zapis — planowany z Sanctum).
-
-Dokumentacja interaktywna Swagger UI dostępna jest pod adresem: [http://localhost/api/documentation](http://localhost/api/documentation).
-
-| # | Metoda | Endpoint | Kontroler | Opis |
-|---|--------|----------|-----------|------|
-| 1 | GET | `/api/animals` | `Api\AnimalController@index` | Paginowana lista zwierząt ze statusem **AVAILABLE** (do adopcji); bez filtrów query |
-| 2 | GET | `/api/animals/{id}` | `Api\AnimalController@show` | Szczegóły zwierzęcia (dowolny status) z rasą i gatunkiem |
-| 3 | GET | `/api/animals/{id}/medical-records` | `Api\AnimalController@medicalRecords` | Pełna historia medyczna wybranego zwierzęcia |
-| 4 | GET | `/api/fundraisers` | `Api\FundraiserController@index` | Lista aktywnych zbiórek (`status = 1`) |
-| 5 | GET | `/api/fundraisers/{id}` | `Api\FundraiserController@show` | Szczegółowe dane o zbiórce |
-| 6 | GET | `/api/news` | `Api\NewsController@index` | Lista opublikowanych aktualności |
-| 7 | GET | `/api/news/{id}` | `Api\NewsController@show` | Treść pojedynczego wpisu (tylko opublikowane) |
-| 8 | GET | `/api/species` | `Api\SpeciesController@index` | Lista gatunków zwierząt |
-| 9 | GET | `/api/breeds` | `Api\BreedController@index` | Lista ras; opcjonalnie `?species_id=` |
-| 10 | GET | `/api/stats` | `Api\StatsController@index` | Zbiorcze statystyki operacyjne schroniska |
-
----
-
-### 9.8. Testowanie API z konsoli przeglądarki
-
-W celu ręcznego przetestowania poprawności zwracanych kodów statusu HTTP (np. walidacja, autoryzacja, CSRF) bez używania formularzy Blade, można wywołać zapytanie `fetch` bezpośrednio z konsoli deweloperskiej przeglądarki (będąc zalogowanym na odpowiednie konto).
-
-Przykładowe zapytanie testujące walidację (oczekiwany kod `422 Unprocessable Content` zamiast przekierowania i kodu `200`):
-
-```javascript
-fetch('/adoption-applications', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-  },
-  body: JSON.stringify({ animal_id: 99999, message: 'Testowe zapytanie API' })
-}).then(async response => {
-  console.log("Status HTTP:", response.status);
-  console.log("Dane JSON:", await response.json());
-});
-```
-
-Dzięki nagłówkowi `Accept: application/json` lub middleware `PreferJsonForFetchRequests`, błędy autoryzacji (`401`), uprawnień ról (`403`), wygaśnięcia sesji/CSRF (`419`) oraz walidacji formularzy (`422`) zostaną zwrócone w czystym formacie JSON z poprawnym kodem statusu.
 

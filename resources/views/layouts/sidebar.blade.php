@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <nav class="flex-1 overflow-y-auto min-h-0 custom-scrollbar mt-6 px-4 space-y-1 pb-4" @click="if (window.innerWidth < 1024) sidebarOpen = false">
+    <nav class="flex-1 overflow-y-auto min-h-0 custom-scrollbar mt-6 px-6 space-y-1 pb-4" @click="if (window.innerWidth < 1024) sidebarOpen = false">
         <x-sidebar-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" icon="view-grid">
             Pulpit główny
         </x-sidebar-link>
